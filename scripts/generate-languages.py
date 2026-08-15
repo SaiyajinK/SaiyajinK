@@ -29,7 +29,7 @@ for repo in repos:
         languages_data[language] = languages_data.get(language, 0) + amount
 
 
-# Langages que l'on veut TOUJOURS afficher
+# Langages affichés, dans cet ordre
 LANGUAGES = [
     "CSS",
     "C++",
@@ -38,7 +38,7 @@ LANGUAGES = [
     "PowerShell"
 ]
 
-colors = {
+COLORS = {
     "CSS": "#663399",
     "C++": "#f34b7d",
     "JavaScript": "#f1e05a",
@@ -46,22 +46,14 @@ colors = {
     "PowerShell": "#012456"
 }
 
-# Calcul des vrais pourcentages
 total = sum(languages_data.values())
 
-languages = []
+values = []
 
 for language in LANGUAGES:
     amount = languages_data.get(language, 0)
-
-    percent = (
-        amount / total * 100
-        if total > 0 else 0
-    )
-
-    languages.append(
-        (language, percent)
-    )
+    percent = (amount / total * 100) if total else 0
+    values.append((language, percent))
 
 
 WIDTH = 500
@@ -72,8 +64,7 @@ BAR_Y = 42
 BAR_WIDTH = 452
 BAR_HEIGHT = 12
 
-SEGMENT_COUNT = 5
-SEGMENT_WIDTH = BAR_WIDTH / SEGMENT_COUNT
+SEGMENT_WIDTH = BAR_WIDTH / 5
 
 
 svg = f"""<svg
@@ -83,11 +74,9 @@ height="{HEIGHT}"
 viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
-
 .title {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 18px;
-    font-weight: 500;
     fill: #2f81f7;
 }}
 
@@ -96,37 +85,26 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     font-size: 9px;
     fill: #8b949e;
 }}
-
 </style>
-
 
 <rect
     x="0.5"
     y="0.5"
-    width="{WIDTH - 1}"
-    height="{HEIGHT - 1}"
+    width="499"
+    height="104"
     rx="6"
     fill="#0d1117"
     stroke="#30363d"
 />
 
-
-<!-- TITRE -->
-
 <text
-    x="{WIDTH / 2}"
+    x="250"
     y="25"
     text-anchor="middle"
     class="title"
->
-Top Languages
-</text>
-
-
-<!-- BARRE -->
+>Top Languages</text>
 
 <clipPath id="barClip">
-
     <rect
         x="{BAR_X}"
         y="{BAR_Y}"
@@ -134,27 +112,24 @@ Top Languages
         height="{BAR_HEIGHT}"
         rx="6"
     />
-
 </clipPath>
-
 
 <g clip-path="url(#barClip)">
 """
 
 
-# 5 portions exactement égales
-for index, (language, percent) in enumerate(languages):
+# 5 segments STRICTEMENT égaux
+for index, (language, percent) in enumerate(values):
 
     x = BAR_X + index * SEGMENT_WIDTH
-    color = colors[language]
 
     svg += f"""
 <rect
     x="{x:.2f}"
     y="{BAR_Y}"
-    width="{SEGMENT_WIDTH + 0.5:.2f}"
+    width="{SEGMENT_WIDTH + 0.2:.2f}"
     height="{BAR_HEIGHT}"
-    fill="{color}"
+    fill="{COLORS[language]}"
 />
 """
 
@@ -164,44 +139,25 @@ svg += """
 """
 
 
-# LÉGENDE
-#
-# Chaque élément possède exactement la même largeur que
-# son segment et son contenu est centré dans cette zone.
+# Un label centré sous chaque segment
+for index, (language, percent) in enumerate(values):
 
-LEGEND_Y = 78
+    center_x = BAR_X + (index + 0.5) * SEGMENT_WIDTH
 
-for index, (language, percent) in enumerate(languages):
-
-    center_x = (
-        BAR_X
-        + index * SEGMENT_WIDTH
-        + SEGMENT_WIDTH / 2
-    )
-
-    color = colors[language]
-
-    # Groupe entier centré sous le segment
     svg += f"""
-<g transform="translate({center_x:.2f}, 0)">
+<circle
+    cx="{center_x:.2f}"
+    cy="71"
+    r="3"
+    fill="{COLORS[language]}"
+/>
 
-    <circle
-        cx="-27"
-        cy="{LEGEND_Y - 3}"
-        r="3"
-        fill="{color}"
-    />
-
-    <text
-        x="3"
-        y="{LEGEND_Y}"
-        text-anchor="middle"
-        class="legend"
-    >
-        {language} {percent:.1f}%
-    </text>
-
-</g>
+<text
+    x="{center_x:.2f}"
+    y="86"
+    text-anchor="middle"
+    class="legend"
+>{language} {percent:.1f}%</text>
 """
 
 
@@ -211,26 +167,15 @@ svg += """
 
 
 output_dir = "profile-summary-card-output/custom"
+os.makedirs(output_dir, exist_ok=True)
 
-os.makedirs(
-    output_dir,
-    exist_ok=True
-)
-
+# NOUVEAU NOM => impossible de récupérer l'ancien SVG
 output_file = os.path.join(
     output_dir,
-    "top-languages-equal.svg"
+    "languages-5-equal.svg"
 )
 
-with open(
-    output_file,
-    "w",
-    encoding="utf-8"
-) as file:
-
+with open(output_file, "w", encoding="utf-8") as file:
     file.write(svg)
 
-
-print(
-    f"Generated: {output_file}"
-)
+print(f"Generated: {output_file}")
