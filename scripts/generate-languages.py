@@ -28,6 +28,7 @@ for repo in repos:
     for language, amount in data.items():
         languages_data[language] = languages_data.get(language, 0) + amount
 
+
 LANGUAGES = [
     "CSS",
     "C++",
@@ -50,8 +51,16 @@ values = []
 
 for language in LANGUAGES:
     amount = languages_data.get(language, 0)
-    percent = (amount / total * 100) if total else 0
-    values.append((language, percent))
+
+    percent = (
+        amount / total * 100
+        if total > 0
+        else 0
+    )
+
+    values.append(
+        (language, percent)
+    )
 
 
 WIDTH = 500
@@ -60,8 +69,6 @@ HEIGHT = 90
 BAR_X = 24
 BAR_Y = 39
 BAR_WIDTH = 452
-
-# Barre plus fine
 BAR_HEIGHT = 6
 
 SEGMENT_WIDTH = BAR_WIDTH / len(LANGUAGES)
@@ -74,6 +81,7 @@ height="{HEIGHT}"
 viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
+
 .title {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 18px;
@@ -85,7 +93,9 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     font-size: 9px;
     fill: #8b949e;
 }}
+
 </style>
+
 
 <rect
     x="0.5"
@@ -97,14 +107,19 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
+
 <text
     x="{WIDTH / 2}"
     y="23"
     text-anchor="middle"
     class="title"
->Top Languages</text>
+>
+Top Languages
+</text>
+
 
 <clipPath id="barClip">
+
     <rect
         x="{BAR_X}"
         y="{BAR_Y}"
@@ -112,12 +127,16 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
         height="{BAR_HEIGHT}"
         rx="{BAR_HEIGHT / 2}"
     />
+
 </clipPath>
+
 
 <g clip-path="url(#barClip)">
 """
 
+
 for index, (language, percent) in enumerate(values):
+
     x = BAR_X + index * SEGMENT_WIDTH
 
     svg += f"""
@@ -130,14 +149,21 @@ for index, (language, percent) in enumerate(values):
 />
 """
 
+
 svg += """
 </g>
 """
 
+
 LEGEND_Y = 67
 
+
 for index, (language, percent) in enumerate(values):
-    center_x = BAR_X + (index + 0.5) * SEGMENT_WIDTH
+
+    center_x = (
+        BAR_X
+        + (index + 0.5) * SEGMENT_WIDTH
+    )
 
     svg += f"""
 <circle
@@ -152,22 +178,38 @@ for index, (language, percent) in enumerate(values):
     y="{LEGEND_Y}"
     text-anchor="middle"
     class="legend"
->{language} {percent:.1f}%</text>
+>
+{language} {percent:.2f}%
+</text>
 """
+
 
 svg += """
 </svg>
 """
 
+
 output_dir = "profile-summary-card-output/custom"
-os.makedirs(output_dir, exist_ok=True)
+
+os.makedirs(
+    output_dir,
+    exist_ok=True
+)
 
 output_file = os.path.join(
     output_dir,
     "languages-5-equal.svg"
 )
 
-with open(output_file, "w", encoding="utf-8") as file:
+with open(
+    output_file,
+    "w",
+    encoding="utf-8"
+) as file:
+
     file.write(svg)
 
-print(f"Generated: {output_file}")
+
+print(
+    f"Generated: {output_file}"
+)
