@@ -28,6 +28,8 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
+
+# 4 langages les plus utilisés
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
@@ -42,8 +44,10 @@ colors = {
     "JavaScript": "#f1e05a",
     "Python": "#3572A5",
     "PowerShell": "#012456",
-    "HTML": "#e34c26"
+    "HTML": "#e34c26",
+    "CMake": "#DA3434"
 }
+
 
 WIDTH = 500
 HEIGHT = 105
@@ -54,6 +58,7 @@ BAR_WIDTH = 452
 BAR_HEIGHT = 12
 
 SEGMENT_WIDTH = BAR_WIDTH / 4
+
 
 svg = f"""<svg
 xmlns="http://www.w3.org/2000/svg"
@@ -83,12 +88,14 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
+<!-- TITRE PARFAITEMENT CENTRÉ -->
 <text
     x="{WIDTH / 2}"
     y="26"
     text-anchor="middle"
     class="title"
 >Top Languages</text>
+
 
 <clipPath id="clip">
     <rect
@@ -100,10 +107,14 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     />
 </clipPath>
 
+
+<!-- BARRE -->
 <g clip-path="url(#clip)">
 """
 
+
 for index, (language, amount) in enumerate(languages):
+
     x = BAR_X + (index * SEGMENT_WIDTH)
     color = colors.get(language, "#8b949e")
 
@@ -117,55 +128,49 @@ for index, (language, amount) in enumerate(languages):
 />
 """
 
+
 svg += """
 </g>
 """
 
-# Prépare les labels
-labels = []
 
-for language, amount in languages:
+# Chaque label est centré exactement sous son quart
+LEGEND_Y = 79
+
+for index, (language, amount) in enumerate(languages):
+
     percent = amount / total * 100 if total else 0
-    label = f"{language} {percent:.1f}%"
-    labels.append((language, label))
-
-# Largeur approximative de chaque élément de légende
-item_widths = []
-
-for language, label in labels:
-    item_width = 18 + len(label) * 6.2
-    item_widths.append(item_width)
-
-gap = 18
-total_legend_width = sum(item_widths) + gap * (len(labels) - 1)
-
-# Départ calculé pour centrer l'ensemble
-legend_x = (WIDTH - total_legend_width) / 2
-legend_y = 79
-
-for index, (language, label) in enumerate(labels):
     color = colors.get(language, "#8b949e")
+
+    segment_center = (
+        BAR_X
+        + index * SEGMENT_WIDTH
+        + SEGMENT_WIDTH / 2
+    )
+
+    label = f"{language} {percent:.1f}%"
 
     svg += f"""
 <circle
-    cx="{legend_x + 4}"
-    cy="{legend_y - 4}"
-    r="4"
+    cx="{segment_center - 6}"
+    cy="{LEGEND_Y - 4}"
+    r="3.5"
     fill="{color}"
 />
 
 <text
-    x="{legend_x + 12}"
-    y="{legend_y}"
+    x="{segment_center + 1}"
+    y="{LEGEND_Y}"
+    text-anchor="middle"
     class="legend"
 >{label}</text>
 """
 
-    legend_x += item_widths[index] + gap
 
 svg += """
 </svg>
 """
+
 
 output_dir = "profile-summary-card-output/custom"
 os.makedirs(output_dir, exist_ok=True)
@@ -175,7 +180,11 @@ output_file = os.path.join(
     "top-languages-equal.svg"
 )
 
-with open(output_file, "w", encoding="utf-8") as file:
+with open(
+    output_file,
+    "w",
+    encoding="utf-8"
+) as file:
     file.write(svg)
 
 print(f"Generated: {output_file}")
