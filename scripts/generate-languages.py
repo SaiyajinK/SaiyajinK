@@ -28,8 +28,6 @@ for repo in repos:
     for language, amount in data.items():
         languages_data[language] = languages_data.get(language, 0) + amount
 
-
-# Langages affichés, dans cet ordre
 LANGUAGES = [
     "CSS",
     "C++",
@@ -57,14 +55,16 @@ for language in LANGUAGES:
 
 
 WIDTH = 500
-HEIGHT = 105
+HEIGHT = 90
 
 BAR_X = 24
-BAR_Y = 42
+BAR_Y = 39
 BAR_WIDTH = 452
-BAR_HEIGHT = 8
 
-SEGMENT_WIDTH = BAR_WIDTH / 5
+# Barre plus fine
+BAR_HEIGHT = 6
+
+SEGMENT_WIDTH = BAR_WIDTH / len(LANGUAGES)
 
 
 svg = f"""<svg
@@ -90,16 +90,16 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 <rect
     x="0.5"
     y="0.5"
-    width="499"
-    height="104"
+    width="{WIDTH - 1}"
+    height="{HEIGHT - 1}"
     rx="6"
     fill="#0d1117"
     stroke="#30363d"
 />
 
 <text
-    x="250"
-    y="25"
+    x="{WIDTH / 2}"
+    y="23"
     text-anchor="middle"
     class="title"
 >Top Languages</text>
@@ -110,17 +110,14 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
         y="{BAR_Y}"
         width="{BAR_WIDTH}"
         height="{BAR_HEIGHT}"
-        rx="6"
+        rx="{BAR_HEIGHT / 2}"
     />
 </clipPath>
 
 <g clip-path="url(#barClip)">
 """
 
-
-# 5 segments STRICTEMENT égaux
 for index, (language, percent) in enumerate(values):
-
     x = BAR_X + index * SEGMENT_WIDTH
 
     svg += f"""
@@ -133,43 +130,38 @@ for index, (language, percent) in enumerate(values):
 />
 """
 
-
 svg += """
 </g>
 """
 
+LEGEND_Y = 67
 
-# Un label centré sous chaque segment
 for index, (language, percent) in enumerate(values):
-
     center_x = BAR_X + (index + 0.5) * SEGMENT_WIDTH
 
     svg += f"""
 <circle
     cx="{center_x:.2f}"
-    cy="71"
-    r="3"
+    cy="{LEGEND_Y - 9}"
+    r="2.5"
     fill="{COLORS[language]}"
 />
 
 <text
     x="{center_x:.2f}"
-    y="86"
+    y="{LEGEND_Y}"
     text-anchor="middle"
     class="legend"
 >{language} {percent:.1f}%</text>
 """
 
-
 svg += """
 </svg>
 """
 
-
 output_dir = "profile-summary-card-output/custom"
 os.makedirs(output_dir, exist_ok=True)
 
-# NOUVEAU NOM => impossible de récupérer l'ancien SVG
 output_file = os.path.join(
     output_dir,
     "languages-5-equal.svg"
