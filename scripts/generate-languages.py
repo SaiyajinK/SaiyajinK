@@ -28,7 +28,8 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
-# Garde les 4 langages les plus utilisés
+
+# 4 langages les plus utilisés
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
@@ -39,27 +40,30 @@ total = sum(amount for _, amount in languages)
 
 colors = {
     "CSS": "#663399",
-    "JavaScript": "#f1e05a",
-    "PowerShell": "#012456",
     "C++": "#f34b7d",
+    "JavaScript": "#f1e05a",
     "Python": "#3572A5",
-    "HTML": "#e34c26",
-    "CMake": "#DA3434"
+    "PowerShell": "#012456",
+    "HTML": "#e34c26"
 }
 
-width = 500
-height = 105
 
-bar_x = 24
-bar_y = 42
-bar_width = 452
-bar_height = 12
+WIDTH = 500
+HEIGHT = 105
 
-svg = f"""<svg
-xmlns="http://www.w3.org/2000/svg"
-width="{width}"
-height="{height}"
-viewBox="0 0 {width} {height}">
+BAR_X = 24
+BAR_Y = 42
+BAR_WIDTH = 452
+BAR_HEIGHT = 12
+
+# FORCE 4 portions exactement égales
+SEGMENT_WIDTH = BAR_WIDTH / 4
+
+
+svg = f"""<svg xmlns="http://www.w3.org/2000/svg"
+width="{WIDTH}"
+height="{HEIGHT}"
+viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
 .title {{
@@ -76,61 +80,58 @@ viewBox="0 0 {width} {height}">
 <rect
     x="0.5"
     y="0.5"
-    width="{width - 1}"
-    height="{height - 1}"
+    width="{WIDTH - 1}"
+    height="{HEIGHT - 1}"
     rx="6"
     fill="#0d1117"
     stroke="#30363d"
 />
 
-<text
-    x="24"
-    y="26"
-    class="title"
->Top Languages</text>
+<text x="24" y="26" class="title">Top Languages</text>
 
-<clipPath id="barClip">
+<clipPath id="clip">
     <rect
-        x="{bar_x}"
-        y="{bar_y}"
-        width="{bar_width}"
-        height="{bar_height}"
+        x="{BAR_X}"
+        y="{BAR_Y}"
+        width="{BAR_WIDTH}"
+        height="{BAR_HEIGHT}"
         rx="6"
     />
 </clipPath>
 
-<g clip-path="url(#barClip)">
+<g clip-path="url(#clip)">
 """
 
-# IMPORTANT :
-# La barre est divisée en 4 portions VISUELLEMENT ÉGALES.
-# Les vrais pourcentages sont affichés seulement dans la légende.
-segment_width = bar_width / 4
 
+# BARRE : 4 BLOCS DE 25 % VISUELLEMENT
 for index, (language, amount) in enumerate(languages):
+
+    x = BAR_X + (index * SEGMENT_WIDTH)
     color = colors.get(language, "#8b949e")
-    current_x = bar_x + (index * segment_width)
 
     svg += f"""
 <rect
-    x="{current_x:.2f}"
-    y="{bar_y}"
-    width="{segment_width:.2f}"
-    height="{bar_height}"
+    x="{x}"
+    y="{BAR_Y}"
+    width="{SEGMENT_WIDTH}"
+    height="{BAR_HEIGHT}"
     fill="{color}"
 />
 """
+
 
 svg += """
 </g>
 """
 
-# Légende sur une seule ligne sous la barre
-legend_y = 79
+
+# LÉGENDE AVEC LES VRAIS POURCENTAGES
 legend_x = 24
+legend_y = 79
 
 for language, amount in languages:
-    percent = (amount / total * 100) if total else 0
+
+    percent = amount / total * 100 if total else 0
     color = colors.get(language, "#8b949e")
 
     label = f"{language} {percent:.1f}%"
@@ -152,23 +153,22 @@ for language, amount in languages:
 
     legend_x += 22 + len(label) * 6.2
 
+
 svg += """
 </svg>
 """
 
+
 output_dir = "profile-summary-card-output/custom"
 os.makedirs(output_dir, exist_ok=True)
 
+# NOUVEAU NOM DE FICHIER
 output_file = os.path.join(
     output_dir,
-    "top-languages-horizontal.svg"
+    "top-languages-equal.svg"
 )
 
-with open(
-    output_file,
-    "w",
-    encoding="utf-8"
-) as file:
+with open(output_file, "w", encoding="utf-8") as file:
     file.write(svg)
 
 print(f"Generated: {output_file}")
