@@ -29,12 +29,12 @@ for repo in repos:
         languages[language] = languages.get(language, 0) + amount
 
 
-# 4 langages les plus utilisés
+# 5 langages les plus utilisés
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
     reverse=True
-)[:4]
+)[:5]
 
 total = sum(amount for _, amount in languages)
 
@@ -50,14 +50,15 @@ colors = {
 
 
 WIDTH = 500
-HEIGHT = 105
+HEIGHT = 110
 
 BAR_X = 24
 BAR_Y = 42
 BAR_WIDTH = 452
 BAR_HEIGHT = 12
 
-SEGMENT_WIDTH = BAR_WIDTH / 4
+SEGMENT_COUNT = len(languages)
+SEGMENT_WIDTH = BAR_WIDTH / SEGMENT_COUNT
 
 
 svg = f"""<svg
@@ -68,12 +69,15 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
 .title {{
-    font: 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
     fill: #2f81f7;
 }}
 
 .legend {{
-    font: 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 10px;
     fill: #8b949e;
 }}
 </style>
@@ -88,7 +92,6 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
-<!-- TITRE PARFAITEMENT CENTRÉ -->
 <text
     x="{WIDTH / 2}"
     y="26"
@@ -96,8 +99,7 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     class="title"
 >Top Languages</text>
 
-
-<clipPath id="clip">
+<clipPath id="barClip">
     <rect
         x="{BAR_X}"
         y="{BAR_Y}"
@@ -107,22 +109,21 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     />
 </clipPath>
 
-
-<!-- BARRE -->
-<g clip-path="url(#clip)">
+<g clip-path="url(#barClip)">
 """
 
 
+# 5 portions visuellement égales
 for index, (language, amount) in enumerate(languages):
 
-    x = BAR_X + (index * SEGMENT_WIDTH)
+    x = BAR_X + index * SEGMENT_WIDTH
     color = colors.get(language, "#8b949e")
 
     svg += f"""
 <rect
-    x="{x}"
+    x="{x:.2f}"
     y="{BAR_Y}"
-    width="{SEGMENT_WIDTH}"
+    width="{SEGMENT_WIDTH:.2f}"
     height="{BAR_HEIGHT}"
     fill="{color}"
 />
@@ -134,15 +135,15 @@ svg += """
 """
 
 
-# Chaque label est centré exactement sous son quart
-LEGEND_Y = 79
+# Labels centrés sous CHAQUE segment
+LEGEND_Y = 80
 
 for index, (language, amount) in enumerate(languages):
 
-    percent = amount / total * 100 if total else 0
+    percent = (amount / total * 100) if total else 0
     color = colors.get(language, "#8b949e")
 
-    segment_center = (
+    center_x = (
         BAR_X
         + index * SEGMENT_WIDTH
         + SEGMENT_WIDTH / 2
@@ -151,19 +152,22 @@ for index, (language, amount) in enumerate(languages):
     label = f"{language} {percent:.1f}%"
 
     svg += f"""
-<circle
-    cx="{segment_center - 6}"
-    cy="{LEGEND_Y - 4}"
-    r="3.5"
-    fill="{color}"
-/>
+<g>
+    <circle
+        cx="{center_x - 22:.2f}"
+        cy="{LEGEND_Y - 3}"
+        r="3.5"
+        fill="{color}"
+    />
 
-<text
-    x="{segment_center + 1}"
-    y="{LEGEND_Y}"
-    text-anchor="middle"
-    class="legend"
->{label}</text>
+    <text
+        x="{center_x + 3:.2f}"
+        y="{LEGEND_Y}"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        class="legend"
+    >{label}</text>
+</g>
 """
 
 
