@@ -51,29 +51,22 @@ values = []
 
 for language in LANGUAGES:
     amount = languages_data.get(language, 0)
-
-    percent = (
-        amount / total * 100
-        if total > 0
-        else 0
-    )
-
+    percent = (amount / total * 100) if total else 0
     values.append((language, percent))
 
 
 WIDTH = 500
-HEIGHT = 180
+HEIGHT = 100
 
 BAR_X = 24
-BAR_Y = 88
+BAR_Y = 39
 BAR_WIDTH = 452
 BAR_HEIGHT = 6
 
 SEGMENT_WIDTH = BAR_WIDTH / len(LANGUAGES)
 
-TITLE_Y = 60
-POINT_Y = 112
-TEXT_Y = 132
+POINT_Y = 58
+TEXT_Y = 81
 
 
 svg = f"""<svg
@@ -92,12 +85,11 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 
 .legend {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 9px;
+    font-size: 12px;
     fill: #8b949e;
 }}
 
 </style>
-
 
 <rect
     x="0.5"
@@ -109,19 +101,16 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
-
 <text
     x="{WIDTH / 2}"
-    y="{TITLE_Y}"
+    y="23"
     text-anchor="middle"
     class="title"
 >
 Top Languages
 </text>
 
-
 <clipPath id="barClip">
-
     <rect
         x="{BAR_X}"
         y="{BAR_Y}"
@@ -129,13 +118,10 @@ Top Languages
         height="{BAR_HEIGHT}"
         rx="{BAR_HEIGHT / 2}"
     />
-
 </clipPath>
-
 
 <g clip-path="url(#barClip)">
 """
-
 
 for index, (language, percent) in enumerate(values):
 
@@ -151,11 +137,9 @@ for index, (language, percent) in enumerate(values):
 />
 """
 
-
 svg += """
 </g>
 """
-
 
 for index, (language, percent) in enumerate(values):
 
@@ -182,11 +166,9 @@ for index, (language, percent) in enumerate(values):
 </text>
 """
 
-
 svg += """
 </svg>
 """
-
 
 output_dir = "profile-summary-card-output/custom"
 
@@ -207,7 +189,6 @@ with open(
 ) as file:
 
     file.write(svg)
-
 
 print(
     f"Generated: {output_file}"
