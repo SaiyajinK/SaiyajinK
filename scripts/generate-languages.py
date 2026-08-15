@@ -28,8 +28,6 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
-
-# 4 langages les plus utilisés
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
@@ -47,7 +45,6 @@ colors = {
     "HTML": "#e34c26"
 }
 
-
 WIDTH = 500
 HEIGHT = 105
 
@@ -56,11 +53,10 @@ BAR_Y = 42
 BAR_WIDTH = 452
 BAR_HEIGHT = 12
 
-# FORCE 4 portions exactement égales
 SEGMENT_WIDTH = BAR_WIDTH / 4
 
-
-svg = f"""<svg xmlns="http://www.w3.org/2000/svg"
+svg = f"""<svg
+xmlns="http://www.w3.org/2000/svg"
 width="{WIDTH}"
 height="{HEIGHT}"
 viewBox="0 0 {WIDTH} {HEIGHT}">
@@ -87,7 +83,12 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
-<text x="24" y="26" class="title">Top Languages</text>
+<text
+    x="{WIDTH / 2}"
+    y="26"
+    text-anchor="middle"
+    class="title"
+>Top Languages</text>
 
 <clipPath id="clip">
     <rect
@@ -102,10 +103,7 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 <g clip-path="url(#clip)">
 """
 
-
-# BARRE : 4 BLOCS DE 25 % VISUELLEMENT
 for index, (language, amount) in enumerate(languages):
-
     x = BAR_X + (index * SEGMENT_WIDTH)
     color = colors.get(language, "#8b949e")
 
@@ -119,22 +117,34 @@ for index, (language, amount) in enumerate(languages):
 />
 """
 
-
 svg += """
 </g>
 """
 
-
-# LÉGENDE AVEC LES VRAIS POURCENTAGES
-legend_x = 24
-legend_y = 79
+# Prépare les labels
+labels = []
 
 for language, amount in languages:
-
     percent = amount / total * 100 if total else 0
-    color = colors.get(language, "#8b949e")
-
     label = f"{language} {percent:.1f}%"
+    labels.append((language, label))
+
+# Largeur approximative de chaque élément de légende
+item_widths = []
+
+for language, label in labels:
+    item_width = 18 + len(label) * 6.2
+    item_widths.append(item_width)
+
+gap = 18
+total_legend_width = sum(item_widths) + gap * (len(labels) - 1)
+
+# Départ calculé pour centrer l'ensemble
+legend_x = (WIDTH - total_legend_width) / 2
+legend_y = 79
+
+for index, (language, label) in enumerate(labels):
+    color = colors.get(language, "#8b949e")
 
     svg += f"""
 <circle
@@ -151,18 +161,15 @@ for language, amount in languages:
 >{label}</text>
 """
 
-    legend_x += 22 + len(label) * 6.2
-
+    legend_x += item_widths[index] + gap
 
 svg += """
 </svg>
 """
 
-
 output_dir = "profile-summary-card-output/custom"
 os.makedirs(output_dir, exist_ok=True)
 
-# NOUVEAU NOM DE FICHIER
 output_file = os.path.join(
     output_dir,
     "top-languages-equal.svg"
