@@ -175,7 +175,7 @@ for index, (language, percent) in enumerate(values):
 
 <text
     x="{center_x:.2f}"
-    y="{LEGEND_Y}"
+    y="{LEGEND_Y + 5}"
     text-anchor="middle"
     class="legend"
 >
