@@ -21,6 +21,7 @@ jobs:
         with:
           USERNAME: SaiyajinK
           BRANCH_NAME: main
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -29,15 +30,15 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Generate language bars
+      - name: Generate custom languages card
         env:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         run: python scripts/generate-languages.py
 
-      - name: Commit language SVG
+      - name: Commit custom languages card
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add profile-summary-card-output/custom/top-languages-equal.svg
+          git add profile-summary-card-output/custom/languages-5-equal.svg
           git diff --cached --quiet || git commit -m "Update language stats"
           git push
