@@ -56,7 +56,7 @@ for language in LANGUAGES:
 
 
 WIDTH = 500
-HEIGHT = 100
+HEIGHT = 115
 
 BAR_X = 24
 BAR_Y = 39
@@ -66,7 +66,8 @@ BAR_HEIGHT = 6
 SEGMENT_WIDTH = BAR_WIDTH / len(LANGUAGES)
 
 POINT_Y = 58
-TEXT_Y = 81
+LANGUAGE_Y = 78
+PERCENT_Y = 94
 
 
 svg = f"""<svg
@@ -83,9 +84,15 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     fill: #2f81f7;
 }}
 
-.legend {{
+.language {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 12px;
+    fill: #8b949e;
+}}
+
+.percent {{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 11px;
     fill: #8b949e;
 }}
 
@@ -158,11 +165,20 @@ for index, (language, percent) in enumerate(values):
 
 <text
     x="{center_x:.2f}"
-    y="{TEXT_Y}"
+    y="{LANGUAGE_Y}"
     text-anchor="middle"
-    class="legend"
+    class="language"
 >
-{language} {percent:.2f}%
+{language}
+</text>
+
+<text
+    x="{center_x:.2f}"
+    y="{PERCENT_Y}"
+    text-anchor="middle"
+    class="percent"
+>
+{percent:.2f}%
 </text>
 """
 
