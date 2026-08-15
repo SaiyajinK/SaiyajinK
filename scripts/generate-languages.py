@@ -14,7 +14,7 @@ repos = requests.get(
     headers=headers
 ).json()
 
-languages = {}
+languages_data = {}
 
 for repo in repos:
     if repo.get("fork"):
@@ -26,38 +26,53 @@ for repo in repos:
     ).json()
 
     for language, amount in data.items():
-        languages[language] = languages.get(language, 0) + amount
+        languages_data[language] = languages_data.get(language, 0) + amount
 
 
-# 5 langages les plus utilisés
-languages = sorted(
-    languages.items(),
-    key=lambda x: x[1],
-    reverse=True
-)[:5]
-
-total = sum(amount for _, amount in languages)
+# Langages que l'on veut TOUJOURS afficher
+LANGUAGES = [
+    "CSS",
+    "C++",
+    "JavaScript",
+    "Python",
+    "PowerShell"
+]
 
 colors = {
     "CSS": "#663399",
     "C++": "#f34b7d",
     "JavaScript": "#f1e05a",
     "Python": "#3572A5",
-    "PowerShell": "#012456",
-    "HTML": "#e34c26",
-    "CMake": "#DA3434"
+    "PowerShell": "#012456"
 }
+
+# Calcul des vrais pourcentages
+total = sum(languages_data.values())
+
+languages = []
+
+for language in LANGUAGES:
+    amount = languages_data.get(language, 0)
+
+    percent = (
+        amount / total * 100
+        if total > 0 else 0
+    )
+
+    languages.append(
+        (language, percent)
+    )
 
 
 WIDTH = 500
-HEIGHT = 110
+HEIGHT = 105
 
 BAR_X = 24
 BAR_Y = 42
 BAR_WIDTH = 452
 BAR_HEIGHT = 12
 
-SEGMENT_COUNT = len(languages)
+SEGMENT_COUNT = 5
 SEGMENT_WIDTH = BAR_WIDTH / SEGMENT_COUNT
 
 
@@ -68,19 +83,22 @@ height="{HEIGHT}"
 viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
+
 .title {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 500;
     fill: #2f81f7;
 }}
 
 .legend {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     fill: #8b949e;
 }}
+
 </style>
+
 
 <rect
     x="0.5"
@@ -92,14 +110,23 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
     stroke="#30363d"
 />
 
+
+<!-- TITRE -->
+
 <text
     x="{WIDTH / 2}"
-    y="26"
+    y="25"
     text-anchor="middle"
     class="title"
->Top Languages</text>
+>
+Top Languages
+</text>
+
+
+<!-- BARRE -->
 
 <clipPath id="barClip">
+
     <rect
         x="{BAR_X}"
         y="{BAR_Y}"
@@ -107,23 +134,25 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
         height="{BAR_HEIGHT}"
         rx="6"
     />
+
 </clipPath>
+
 
 <g clip-path="url(#barClip)">
 """
 
 
-# 5 portions visuellement égales
-for index, (language, amount) in enumerate(languages):
+# 5 portions exactement égales
+for index, (language, percent) in enumerate(languages):
 
     x = BAR_X + index * SEGMENT_WIDTH
-    color = colors.get(language, "#8b949e")
+    color = colors[language]
 
     svg += f"""
 <rect
     x="{x:.2f}"
     y="{BAR_Y}"
-    width="{SEGMENT_WIDTH:.2f}"
+    width="{SEGMENT_WIDTH + 0.5:.2f}"
     height="{BAR_HEIGHT}"
     fill="{color}"
 />
@@ -135,13 +164,14 @@ svg += """
 """
 
 
-# Labels centrés sous CHAQUE segment
-LEGEND_Y = 80
+# LÉGENDE
+#
+# Chaque élément possède exactement la même largeur que
+# son segment et son contenu est centré dans cette zone.
 
-for index, (language, amount) in enumerate(languages):
+LEGEND_Y = 78
 
-    percent = (amount / total * 100) if total else 0
-    color = colors.get(language, "#8b949e")
+for index, (language, percent) in enumerate(languages):
 
     center_x = (
         BAR_X
@@ -149,24 +179,28 @@ for index, (language, amount) in enumerate(languages):
         + SEGMENT_WIDTH / 2
     )
 
-    label = f"{language} {percent:.1f}%"
+    color = colors[language]
 
+    # Groupe entier centré sous le segment
     svg += f"""
-<g>
+<g transform="translate({center_x:.2f}, 0)">
+
     <circle
-        cx="{center_x - 22:.2f}"
+        cx="-27"
         cy="{LEGEND_Y - 3}"
-        r="3.5"
+        r="3"
         fill="{color}"
     />
 
     <text
-        x="{center_x + 3:.2f}"
+        x="3"
         y="{LEGEND_Y}"
         text-anchor="middle"
-        dominant-baseline="middle"
         class="legend"
-    >{label}</text>
+    >
+        {language} {percent:.1f}%
+    </text>
+
 </g>
 """
 
@@ -177,7 +211,11 @@ svg += """
 
 
 output_dir = "profile-summary-card-output/custom"
-os.makedirs(output_dir, exist_ok=True)
+
+os.makedirs(
+    output_dir,
+    exist_ok=True
+)
 
 output_file = os.path.join(
     output_dir,
@@ -189,6 +227,10 @@ with open(
     "w",
     encoding="utf-8"
 ) as file:
+
     file.write(svg)
 
-print(f"Generated: {output_file}")
+
+print(
+    f"Generated: {output_file}"
+)
