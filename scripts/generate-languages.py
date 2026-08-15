@@ -28,7 +28,7 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
-# 4 langages maximum
+# Garde les 4 langages les plus utilisés
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
@@ -83,7 +83,11 @@ viewBox="0 0 {width} {height}">
     stroke="#30363d"
 />
 
-<text x="24" y="26" class="title">Top Languages</text>
+<text
+    x="24"
+    y="26"
+    class="title"
+>Top Languages</text>
 
 <clipPath id="barClip">
     <rect
@@ -98,30 +102,30 @@ viewBox="0 0 {width} {height}">
 <g clip-path="url(#barClip)">
 """
 
-# Chaque langage prend exactement 1/4 de la barre
-segment_width = bar_width / len(languages)
-current_x = bar_x
+# IMPORTANT :
+# La barre est divisée en 4 portions VISUELLEMENT ÉGALES.
+# Les vrais pourcentages sont affichés seulement dans la légende.
+segment_width = bar_width / 4
 
-for language, amount in languages:
+for index, (language, amount) in enumerate(languages):
     color = colors.get(language, "#8b949e")
+    current_x = bar_x + (index * segment_width)
 
     svg += f"""
-    <rect
-        x="{current_x:.2f}"
-        y="{bar_y}"
-        width="{segment_width:.2f}"
-        height="{bar_height}"
-        fill="{color}"
-    />
-    """
-
-    current_x += segment_width
+<rect
+    x="{current_x:.2f}"
+    y="{bar_y}"
+    width="{segment_width:.2f}"
+    height="{bar_height}"
+    fill="{color}"
+/>
+"""
 
 svg += """
 </g>
 """
 
-# Légende sous la barre
+# Légende sur une seule ligne sous la barre
 legend_y = 79
 legend_x = 24
 
