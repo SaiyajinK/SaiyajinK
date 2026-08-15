@@ -28,12 +28,12 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
-# On garde les 5 principaux langages
+# 4 langages max
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
     reverse=True
-)[:5]
+)[:4]
 
 total = sum(amount for _, amount in languages)
 
@@ -48,12 +48,12 @@ colors = {
 }
 
 width = 500
-height = 125
+height = 105
 
 bar_x = 24
-bar_y = 54
+bar_y = 42
 bar_width = 452
-bar_height = 14
+bar_height = 12
 
 svg = f"""<svg
 xmlns="http://www.w3.org/2000/svg"
@@ -63,12 +63,12 @@ viewBox="0 0 {width} {height}">
 
 <style>
 .title {{
-    font: 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font: 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     fill: #2f81f7;
 }}
 
 .legend {{
-    font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font: 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     fill: #8b949e;
 }}
 </style>
@@ -83,13 +83,7 @@ viewBox="0 0 {width} {height}">
     stroke="#30363d"
 />
 
-<text
-    x="24"
-    y="30"
-    class="title"
->
-Top Languages
-</text>
+<text x="24" y="26" class="title">Top Languages</text>
 
 <clipPath id="barClip">
     <rect
@@ -97,7 +91,7 @@ Top Languages
         y="{bar_y}"
         width="{bar_width}"
         height="{bar_height}"
-        rx="7"
+        rx="6"
     />
 </clipPath>
 
@@ -106,7 +100,7 @@ Top Languages
     y="{bar_y}"
     width="{bar_width}"
     height="{bar_height}"
-    rx="7"
+    rx="6"
     fill="#21262d"
 />
 
@@ -136,8 +130,8 @@ svg += """
 </g>
 """
 
-# Légende compacte sur une seule ligne
-legend_y = 94
+# Langages sur UNE seule ligne sous la barre
+legend_y = 79
 legend_x = 24
 
 for language, amount in languages:
@@ -148,23 +142,21 @@ for language, amount in languages:
 
     svg += f"""
 <circle
-    cx="{legend_x + 5}"
+    cx="{legend_x + 4}"
     cy="{legend_y - 4}"
-    r="5"
+    r="4"
     fill="{color}"
 />
 
 <text
-    x="{legend_x + 15}"
+    x="{legend_x + 12}"
     y="{legend_y}"
     class="legend"
->
-{label}
-</text>
+>{label}</text>
 """
 
-    # Espacement approximatif suivant la longueur du texte
-    legend_x += 25 + len(label) * 7
+    # espace horizontal avant le prochain langage
+    legend_x += 22 + len(label) * 6.2
 
 svg += """
 </svg>
@@ -175,7 +167,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 output_file = os.path.join(
     output_dir,
-    "top-languages.svg"
+    "top-languages-horizontal.svg"
 )
 
 with open(
