@@ -55,20 +55,20 @@ for language in LANGUAGES:
     values.append((language, percent))
 
 
-# Même format visuel que la carte Stats
-WIDTH = 360
-HEIGHT = 180
+# Ratio 2:1, identique à la carte Stats
+WIDTH = 500
+HEIGHT = 250
 
-BAR_X = 24
-BAR_Y = 82
-BAR_WIDTH = 312
+BAR_X = 35
+BAR_Y = 122
+BAR_WIDTH = 430
 BAR_HEIGHT = 6
 
 SEGMENT_WIDTH = BAR_WIDTH / len(LANGUAGES)
 
-TITLE_Y = 54
-POINT_Y = 108
-TEXT_Y = 129
+TITLE_Y = 87
+POINT_Y = 152
+TEXT_Y = 174
 
 
 svg = f"""<svg
@@ -78,7 +78,6 @@ height="{HEIGHT}"
 viewBox="0 0 {WIDTH} {HEIGHT}">
 
 <style>
-
 .title {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 18px;
@@ -87,10 +86,9 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 
 .legend {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 8px;
+    font-size: 9px;
     fill: #8b949e;
 }}
-
 </style>
 
 <rect
@@ -124,7 +122,6 @@ viewBox="0 0 {WIDTH} {HEIGHT}">
 """
 
 for index, (language, percent) in enumerate(values):
-
     x = BAR_X + index * SEGMENT_WIDTH
 
     svg += f"""
