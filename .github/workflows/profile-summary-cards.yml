@@ -16,6 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: root
           fetch-depth: 0
 
       - name: Generate profile summary cards
@@ -24,12 +25,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         with:
           USERNAME: SaiyajinK
-          BRANCH_NAME: main
+          BRANCH_NAME: root
 
       - name: Sync repository
         run: |
-          git fetch origin main
-          git reset --hard origin/main
+          git fetch origin root
+          git reset --hard origin/root
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -57,5 +58,5 @@ jobs:
           fi
 
           git commit -m "Update custom language stats"
-          git pull --rebase origin main
-          git push origin main
+          git pull --rebase origin root
+          git push origin root
