@@ -38,6 +38,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add profile-summary-card-output/custom/top-languages.svg
+          git add profile-summary-card-output/custom/top-languages-horizontal.svg
           git diff --cached --quiet || git commit -m "Update language stats"
           git push
