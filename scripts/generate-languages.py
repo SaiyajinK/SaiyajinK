@@ -28,7 +28,7 @@ for repo in repos:
     for language, amount in data.items():
         languages[language] = languages.get(language, 0) + amount
 
-# 4 langages max
+# 4 langages maximum
 languages = sorted(
     languages.items(),
     key=lambda x: x[1],
@@ -95,23 +95,14 @@ viewBox="0 0 {width} {height}">
     />
 </clipPath>
 
-<rect
-    x="{bar_x}"
-    y="{bar_y}"
-    width="{bar_width}"
-    height="{bar_height}"
-    rx="6"
-    fill="#21262d"
-/>
-
 <g clip-path="url(#barClip)">
 """
 
+# Chaque langage prend exactement 1/4 de la barre
+segment_width = bar_width / len(languages)
 current_x = bar_x
 
 for language, amount in languages:
-    percent = (amount / total * 100) if total else 0
-    segment_width = (percent / 100) * bar_width
     color = colors.get(language, "#8b949e")
 
     svg += f"""
@@ -130,7 +121,7 @@ svg += """
 </g>
 """
 
-# Langages sur UNE seule ligne sous la barre
+# Légende sous la barre
 legend_y = 79
 legend_x = 24
 
@@ -155,7 +146,6 @@ for language, amount in languages:
 >{label}</text>
 """
 
-    # espace horizontal avant le prochain langage
     legend_x += 22 + len(label) * 6.2
 
 svg += """
