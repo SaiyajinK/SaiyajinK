@@ -14,11 +14,11 @@
 <table>
   <tr>
     <td align="center" valign="middle">
-      <img src="./activity.svg" alt="Activity" width="620">
+      <img src="./profile-summary-card-output/custom/activity.svg" alt="Activity" width="620">
     </td>
     <td align="center" valign="middle">
       <a href="https://ko-fi.com/saiyajink">
-        <img src="./kofi-card.svg" alt="Support on Ko-fi" width="230">
+        <img src="./profile-summary-card-output/custom/kofi-card.svg" alt="Support on Ko-fi" width="230">
       </a>
     </td>
   </tr>
