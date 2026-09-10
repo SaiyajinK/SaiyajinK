@@ -1,0 +1,132 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="230"
+    height="220"
+    viewBox="0 0 230 220"
+>
+    <defs>
+        <linearGradient
+            id="cardBackground"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+        >
+            <stop offset="0%" stop-color="#0d1117"/>
+            <stop offset="100%" stop-color="#101722"/>
+        </linearGradient>
+
+        <linearGradient
+            id="buttonBackground"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="0"
+        >
+            <stop offset="0%" stop-color="#111b28"/>
+            <stop offset="100%" stop-color="#0d1520"/>
+        </linearGradient>
+    </defs>
+
+    <rect
+        x="0.5"
+        y="0.5"
+        width="229"
+        height="219"
+        rx="6"
+        fill="url(#cardBackground)"
+        stroke="#30363d"
+    />
+
+    <text
+        x="20"
+        y="31"
+        fill="#008cff"
+        font-size="19"
+        font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Support</text>
+
+    <text
+        x="20"
+        y="68"
+        fill="#c9d1d9"
+        font-size="12"
+        font-family="Segoe UI, Arial, sans-serif"
+    >
+        <tspan x="20" dy="0">If you find my work helpful,</tspan>
+        <tspan x="20" dy="20">consider buying me a coffee!</tspan>
+    </text>
+
+    <rect
+        x="20"
+        y="126"
+        width="190"
+        height="52"
+        rx="7"
+        fill="url(#buttonBackground)"
+        stroke="#008cff"
+        stroke-width="1.5"
+    />
+
+    <g transform="translate(37 141)">
+        <rect
+            x="0"
+            y="2"
+            width="24"
+            height="19"
+            rx="4"
+            fill="#ffffff"
+        />
+
+        <path
+            d="M24 6 H28
+               C32 6 34 9 34 12
+               C34 16 31 18 27 18
+               H24"
+            fill="none"
+            stroke="#ffffff"
+            stroke-width="3"
+            stroke-linecap="round"
+        />
+
+        <path
+            d="M7 8
+               C5 5 1 7 2 11
+               C3 14 7 17 12 20
+               C17 17 21 14 22 11
+               C23 7 19 5 17 8
+               C15 5 13 5 12 8
+               C10 5 8 5 7 8Z"
+            fill="#ff5e5b"
+        />
+    </g>
+
+    <text
+        x="126"
+        y="157"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        fill="#ffffff"
+        font-size="13"
+        font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Support on Ko-fi</text>
+
+    <path
+        d="M190 148 L198 148 L198 156"
+        fill="none"
+        stroke="#008cff"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+
+    <path
+        d="M198 148 L188 158"
+        fill="none"
+        stroke="#008cff"
+        stroke-width="1.8"
+        stroke-linecap="round"
+    />
+</svg>
