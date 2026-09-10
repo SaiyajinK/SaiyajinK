@@ -45,18 +45,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         run: python scripts/generate-languages.py
 
-      - name: Commit custom languages card
+      - name: Generate activity card
+        env:
+          GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
+        run: python scripts/generate-activity.py
+
+      - name: Generate Ko-fi card
+        run: python scripts/generate-kofi-card.py
+
+      - name: Commit generated cards
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add profile-summary-card-output/custom/languages-5-equal-v2.svg
+          git add profile-summary-card-output/custom/activity.svg
+          git add profile-summary-card-output/custom/kofi-card.svg
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
 
-          git commit -m "Update custom language stats"
+          git commit -m "Update profile cards"
           git pull --rebase origin root
           git push origin root
