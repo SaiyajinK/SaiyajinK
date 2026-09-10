@@ -115,7 +115,6 @@ while True:
 
     after = page_info["endCursor"]
 
-
 if not language_sizes:
     language_sizes = {
         "CSS": 1,
@@ -162,10 +161,20 @@ card_y = 16
 card_w = WIDTH - 24
 card_h = HEIGHT - 32
 
-bar_x = 38
-bar_y = 78
-bar_w = card_w - 76
+bar_margin = 28
 bar_h = 8
+
+content_height = 124
+content_top = card_y + (card_h - content_height) / 2
+
+title_y = content_top + 18
+bar_y = content_top + 40
+dot_y = content_top + 68
+label_y = content_top + 91
+percent_y = content_top + 116
+
+bar_x = card_x + bar_margin
+bar_w = card_w - (bar_margin * 2)
 
 segment_w = bar_w / len(items)
 centers = [bar_x + segment_w * i + segment_w / 2 for i in range(len(items))]
@@ -173,34 +182,32 @@ centers = [bar_x + segment_w * i + segment_w / 2 for i in range(len(items))]
 bar_segments = []
 for i, item in enumerate(items):
     x = bar_x + segment_w * i
-    radius_left = "4" if i == 0 else "0"
-    radius_right = "4" if i == len(items) - 1 else "0"
 
     if i == 0:
         path = (
-            f"M{x+4},{bar_y} "
-            f"H{x+segment_w:.2f} "
-            f"V{bar_y+bar_h} "
-            f"H{x+4} "
-            f"Q{x},{bar_y+bar_h} {x},{bar_y+bar_h-4} "
-            f"V{bar_y+4} "
-            f"Q{x},{bar_y} {x+4},{bar_y} Z"
+            f"M{x + 4:.2f},{bar_y:.2f} "
+            f"H{x + segment_w:.2f} "
+            f"V{bar_y + bar_h:.2f} "
+            f"H{x + 4:.2f} "
+            f"Q{x:.2f},{bar_y + bar_h:.2f} {x:.2f},{bar_y + bar_h - 4:.2f} "
+            f"V{bar_y + 4:.2f} "
+            f"Q{x:.2f},{bar_y:.2f} {x + 4:.2f},{bar_y:.2f} Z"
         )
         bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
     elif i == len(items) - 1:
         x2 = x + segment_w
         path = (
-            f"M{x:.2f},{bar_y} "
-            f"H{x2-4:.2f} "
-            f"Q{x2:.2f},{bar_y} {x2:.2f},{bar_y+4} "
-            f"V{bar_y+bar_h-4} "
-            f"Q{x2:.2f},{bar_y+bar_h} {x2-4:.2f},{bar_y+bar_h} "
+            f"M{x:.2f},{bar_y:.2f} "
+            f"H{x2 - 4:.2f} "
+            f"Q{x2:.2f},{bar_y:.2f} {x2:.2f},{bar_y + 4:.2f} "
+            f"V{bar_y + bar_h - 4:.2f} "
+            f"Q{x2:.2f},{bar_y + bar_h:.2f} {x2 - 4:.2f},{bar_y + bar_h:.2f} "
             f"H{x:.2f} Z"
         )
         bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
     else:
         bar_segments.append(
-            f'<rect x="{x:.2f}" y="{bar_y}" width="{segment_w:.2f}" height="{bar_h}" fill="{item["color"]}"/>'
+            f'<rect x="{x:.2f}" y="{bar_y:.2f}" width="{segment_w:.2f}" height="{bar_h}" fill="{item["color"]}"/>'
         )
 
 dots = []
@@ -209,12 +216,12 @@ percents = []
 
 for i, item in enumerate(items):
     cx = centers[i]
-    dots.append(f'<circle cx="{cx:.2f}" cy="108" r="3" fill="{item["color"]}"/>')
+    dots.append(f'<circle cx="{cx:.2f}" cy="{dot_y:.2f}" r="3" fill="{item["color"]}"/>')
     labels.append(
-        f'<text x="{cx:.2f}" y="131" text-anchor="middle" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
+        f'<text x="{cx:.2f}" y="{label_y:.2f}" text-anchor="middle" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
     )
     percents.append(
-        f'<text x="{cx:.2f}" y="156" text-anchor="middle" fill="{MUTED}" font-size="10" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
+        f'<text x="{cx:.2f}" y="{percent_y:.2f}" text-anchor="middle" fill="{MUTED}" font-size="10" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
     )
 
 svg = f'''<svg
@@ -234,8 +241,8 @@ svg = f'''<svg
     />
 
     <text
-        x="{WIDTH / 2}"
-        y="43"
+        x="{WIDTH / 2:.2f}"
+        y="{title_y:.2f}"
         text-anchor="middle"
         fill="{TITLE}"
         font-size="19"
