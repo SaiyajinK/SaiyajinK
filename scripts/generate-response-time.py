@@ -196,11 +196,6 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGH
       <stop offset="100%" stop-color="#101722"/>
     </linearGradient>
 
-    <linearGradient id="greenBar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#18d7a0"/>
-      <stop offset="100%" stop-color="#28e07c"/>
-    </linearGradient>
-
     <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
       <feGaussianBlur stdDeviation="6" result="blur"/>
       <feMerge>
@@ -210,7 +205,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGH
     </filter>
   </defs>
 
-  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="url(#cardBg)" stroke="{BORDER}"/>
+  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="{BG}" stroke="{BORDER}"/>
 
   <g transform="translate(0, 16)">
     <text x="{WIDTH / 2:.1f}" y="28" text-anchor="middle" fill="{TEXT}" font-size="18" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Response time</text>
