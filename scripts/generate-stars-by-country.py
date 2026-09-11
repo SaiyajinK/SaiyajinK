@@ -16,7 +16,7 @@ OUTPUT = "profile-summary-card-output/custom/stars-by-country.svg"
 CACHE_FILE = "profile-summary-card-output/custom/stars-country-cache.json"
 
 WIDTH = 650
-HEIGHT = 230
+HEIGHT = 250
 
 WORLD_MAP_URL = (
     "https://simplemaps.com/static/demos/"
@@ -424,14 +424,8 @@ other_percent = other_count / display_total * 100
 other_progress = min(other_count / max_count * BAR_W, BAR_W)
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}">
-  <defs>
-    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d1117"/>
-      <stop offset="100%" stop-color="#101722"/>
-    </linearGradient>
-  </defs>
 
-  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="7" fill="url(#cardBg)" stroke="{BORDER}"/>
+  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="7" fill="{BG}" stroke="{BORDER}"/>
 
   <path d="M16 12 L19.6 21.8 L30 22.1 L21.8 28.5 L24.8 38 L16 32 L7.2 38 L10.2 28.5 L2 22.1 L12.4 21.8 Z"
         fill="none" stroke="{TITLE}" stroke-width="1.7" stroke-linejoin="round"/>
