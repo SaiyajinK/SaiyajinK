@@ -55,6 +55,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         run: python scripts/generate-activity-3y.py
 
+      - name: Generate response time card
+        env:
+          GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
+        run: python scripts/generate-response-time.py
+
+      - name: Generate stars by country card
+        env:
+          GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
+        run: python scripts/generate-stars-by-country.py
+
       - name: Generate Ko-fi card
         run: python scripts/generate-kofi-card.py
 
@@ -66,6 +76,9 @@ jobs:
           git add profile-summary-card-output/custom/languages-5-equal-v2.svg
           git add profile-summary-card-output/custom/activity.svg
           git add profile-summary-card-output/custom/activity-3y.svg
+          git add profile-summary-card-output/custom/response-time.svg
+          git add profile-summary-card-output/custom/stars-by-country.svg
+          git add profile-summary-card-output/custom/stars-country-cache.json
           git add profile-summary-card-output/custom/kofi-card.svg
 
           if git diff --cached --quiet; then
