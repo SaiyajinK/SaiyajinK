@@ -50,10 +50,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         run: python scripts/generate-activity.py
 
-      - name: Generate 4-year activity card
+      - name: Generate 3-year activity card
         env:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
-        run: python scripts/generate-activity-4y.py
+        run: python scripts/generate-activity-3y.py
 
       - name: Generate Ko-fi card
         run: python scripts/generate-kofi-card.py
@@ -65,7 +65,7 @@ jobs:
 
           git add profile-summary-card-output/custom/languages-5-equal-v2.svg
           git add profile-summary-card-output/custom/activity.svg
-          git add profile-summary-card-output/custom/activity-4y.svg
+          git add profile-summary-card-output/custom/activity-3y.svg
           git add profile-summary-card-output/custom/kofi-card.svg
 
           if git diff --cached --quiet; then
