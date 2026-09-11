@@ -8,7 +8,7 @@ TOKEN = os.environ.get("GITHUB_TOKEN")
 
 OUTPUT = "profile-summary-card-output/custom/response-time.svg"
 
-WIDTH = 230
+WIDTH = 210
 HEIGHT = 250
 
 BG = "#0d1117"
@@ -21,7 +21,7 @@ MUTED = "#c9d1d9"
 SUBTLE = "#9da7b3"
 
 GREEN = "#28e07c"
-GREEN_DARK = "#173226"
+GREEN_BG = "#173226"
 GREEN_ICON = "#1de06f"
 
 if not TOKEN:
@@ -112,11 +112,10 @@ query($owner: String!, $name: String!) {
 }
 """
 
-
-response_hours = []
-
 repos_data = graphql(repos_query, {"login": USERNAME})
 repos = [repo["name"] for repo in repos_data["user"]["repositories"]["nodes"]]
+
+response_hours = []
 
 
 def process_nodes(nodes):
@@ -185,16 +184,16 @@ else:
     pct_over_72 = round(over_72 / count_total * 100)
 
 avg_days = average_hours / 24 if average_hours else 0
-avg_text = f"{avg_days:.1f} jours".replace(".", ",")
+avg_text = f"{avg_days:.1f} days"
 
 progress_pct = max(8, min(100, pct_under_24))
-progress_width = 150 * progress_pct / 100.0
+progress_width = 128 * progress_pct / 100.0
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}">
   <defs>
-    <linearGradient id="bgGlow" x1="0" y1="0" x2="{WIDTH}" y2="{HEIGHT}" gradientUnits="userSpaceOnUse">
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#0d1117"/>
-      <stop offset="100%" stop-color="#0f1721"/>
+      <stop offset="100%" stop-color="#101722"/>
     </linearGradient>
 
     <linearGradient id="greenBar" x1="0" y1="0" x2="1" y2="0">
@@ -211,33 +210,29 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGH
     </filter>
   </defs>
 
-  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="url(#bgGlow)" stroke="{BORDER}"/>
+  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="url(#cardBg)" stroke="{BORDER}"/>
   <rect x="8" y="8" width="{WIDTH - 16}" height="{HEIGHT - 16}" rx="8" fill="none" stroke="{INNER_BORDER}"/>
 
-  <rect x="16" y="14" width="30" height="24" rx="6" fill="#14304d" stroke="#20496f"/>
-  <text x="31" y="30" text-anchor="middle" fill="#cfe6ff" font-size="14" font-weight="700" font-family="Segoe UI, Arial, sans-serif">03</text>
+  <text x="16" y="30" fill="{TEXT}" font-size="18" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Response time</text>
+  <text x="16" y="50" fill="{MUTED}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Average delay to reply to issues.</text>
 
-  <text x="55" y="30" fill="{TEXT}" font-size="21" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Temps de réponse</text>
-  <text x="18" y="52" fill="{MUTED}" font-size="12" font-family="Segoe UI, Arial, sans-serif">Délai moyen pour répondre aux issues.</text>
+  <circle cx="36" cy="95" r="20" fill="{GREEN_BG}" filter="url(#softGlow)"/>
+  <path d="M38 77 L28 97 H37 L33 115 L47 92 H38 Z" fill="{GREEN_ICON}"/>
 
-  <circle cx="38" cy="95" r="21" fill="{GREEN_DARK}" filter="url(#softGlow)"/>
-  <path d="M40 76 L30 96 H39 L35 114 L49 91 H40 Z" fill="{GREEN_ICON}"/>
+  <text x="60" y="99" fill="{TEXT}" font-size="18" font-weight="700" font-family="Segoe UI, Arial, sans-serif">{avg_text}</text>
 
-  <text x="66" y="98" fill="{TEXT}" font-size="20" font-weight="700" font-family="Segoe UI, Arial, sans-serif">{avg_text}</text>
+  <rect x="16" y="116" width="128" height="9" rx="4.5" fill="{GREEN_BG}"/>
+  <rect x="16" y="116" width="{progress_width:.1f}" height="9" rx="4.5" fill="url(#greenBar)"/>
 
-  <rect x="18" y="116" width="150" height="9" rx="4.5" fill="#173226"/>
-  <rect x="18" y="116" width="{progress_width:.1f}" height="9" rx="4.5" fill="url(#greenBar)"/>
+  <text x="16" y="145" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&lt; 1 day</text>
+  <text x="194" y="145" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_under_24}%</text>
 
-  <text x="18" y="145" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">&lt; 1 jour</text>
-  <text x="196" y="145" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{pct_under_24}%</text>
+  <text x="16" y="166" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">1-3 days</text>
+  <text x="194" y="166" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_24_72}%</text>
 
-  <text x="18" y="166" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">1-3 jours</text>
-  <text x="196" y="166" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{pct_24_72}%</text>
+  <text x="16" y="187" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&gt; 3 days</text>
+  <text x="194" y="187" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_over_72}%</text>
 
-  <text x="18" y="187" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">&gt; 3 jours</text>
-  <text x="196" y="187" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{pct_over_72}%</text>
-
-  <text x="18" y="221" fill="{MUTED}" font-size="12" font-family="Segoe UI, Arial, sans-serif">Montre la réactivité sur les discussions.</text>
 </svg>
 '''
 
