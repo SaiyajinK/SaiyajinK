@@ -14,7 +14,7 @@
 <table>
   <tr>
     <td align="center" valign="middle">
-      <img src="./profile-summary-card-output/custom/activity.svg" alt="Activity" width="620">
+      <img src="./profile-summary-card-output/custom/activity-3y.svg" alt="Activity" width="610">
     </td>
     <td align="center" valign="middle">
       <a href="https://ko-fi.com/saiyajink">
