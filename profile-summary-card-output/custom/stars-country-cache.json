@@ -1,0 +1,106 @@
+{
+  "🇫🇷": null,
+  "Germany": {
+    "country_code": "DE",
+    "country_name": "Allemagne"
+  },
+  "France": {
+    "country_code": "FR",
+    "country_name": "France"
+  },
+  "Canada": {
+    "country_code": "CA",
+    "country_name": "Canada"
+  },
+  "Moscow": {
+    "country_code": "RU",
+    "country_name": "Russie"
+  },
+  "Finland": {
+    "country_code": "FI",
+    "country_name": "Finlande"
+  },
+  "Kansas City, MO": {
+    "country_code": "US",
+    "country_name": "États-Unis d'Amérique"
+  },
+  "Unicorn Land": {
+    "country_code": "US",
+    "country_name": "États-Unis d'Amérique"
+  },
+  "Cluj-Napoca, Romania": {
+    "country_code": "RO",
+    "country_name": "Roumanie"
+  },
+  "ru_RU": {
+    "country_code": "JP",
+    "country_name": "Japon"
+  },
+  "Australia": {
+    "country_code": "AU",
+    "country_name": "Australie"
+  },
+  "Geparkt auf dem Mobilen Testgelände.": null,
+  "Pennsyltucky, USA": null,
+  "江苏省南京市玄武区孝陵卫街道200号院": null,
+  "Berlin": {
+    "country_code": "DE",
+    "country_name": "Allemagne"
+  },
+  "Indonesia": {
+    "country_code": "ID",
+    "country_name": "Indonésie"
+  },
+  "England": {
+    "country_code": "GB",
+    "country_name": "Royaume-Uni"
+  },
+  "Maracaibo, Venezuela": {
+    "country_code": "VE",
+    "country_name": "Venezuela"
+  },
+  "中国": {
+    "country_code": "CN",
+    "country_name": "Chine"
+  },
+  "Rio de Janeiro": {
+    "country_code": "BR",
+    "country_name": "Brésil"
+  },
+  "Nanjing": {
+    "country_code": "CN",
+    "country_name": "Chine"
+  },
+  "Michigan": {
+    "country_code": "US",
+    "country_name": "États-Unis d'Amérique"
+  },
+  "Magdeburg, Germany": {
+    "country_code": "DE",
+    "country_name": "Allemagne"
+  },
+  "Russian Federation": {
+    "country_code": "RU",
+    "country_name": "Russie"
+  },
+  "Madagascar": {
+    "country_code": "MG",
+    "country_name": "Madagascar"
+  },
+  "de_mirage": {
+    "country_code": "DE",
+    "country_name": "Allemagne"
+  },
+  "Iran": {
+    "country_code": "IR",
+    "country_name": "Iran"
+  },
+  "under a rock": {
+    "country_code": "US",
+    "country_name": "États-Unis d'Amérique"
+  },
+  "United States": {
+    "country_code": "US",
+    "country_name": "États-Unis d'Amérique"
+  }
+}
