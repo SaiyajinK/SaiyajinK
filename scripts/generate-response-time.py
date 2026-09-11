@@ -211,28 +211,29 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGH
   </defs>
 
   <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="url(#cardBg)" stroke="{BORDER}"/>
-  <rect x="8" y="8" width="{WIDTH - 16}" height="{HEIGHT - 16}" rx="8" fill="none" stroke="{INNER_BORDER}"/>
 
-  <text x="16" y="30" fill="{TEXT}" font-size="18" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Response time</text>
-  <text x="16" y="50" fill="{MUTED}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Average delay to reply to issues.</text>
+  <g transform="translate(0, 16)">
+    <text x="{WIDTH / 2:.1f}" y="28" text-anchor="middle" fill="{TEXT}" font-size="18" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Response time</text>
+    <text x="{WIDTH / 2:.1f}" y="48" text-anchor="middle" fill="{MUTED}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Average delay to reply to issues.</text>
 
-  <circle cx="36" cy="95" r="20" fill="{GREEN_BG}" filter="url(#softGlow)"/>
-  <path d="M38 77 L28 97 H37 L33 115 L47 92 H38 Z" fill="{GREEN_ICON}"/>
+    <g transform="translate(0, 84)">
+      <circle cx="56" cy="0" r="20" fill="{GREEN_BG}" filter="url(#softGlow)"/>
+      <path d="M58 -18 L48 2 H57 L53 20 L67 -3 H58 Z" fill="{GREEN_ICON}"/>
+      <text x="112" y="5" text-anchor="middle" fill="{TEXT}" font-size="18" font-weight="700" font-family="Segoe UI, Arial, sans-serif">{avg_text}</text>
+    </g>
 
-  <text x="60" y="99" fill="{TEXT}" font-size="18" font-weight="700" font-family="Segoe UI, Arial, sans-serif">{avg_text}</text>
+    <rect x="39" y="110" width="132" height="9" rx="4.5" fill="{GREEN_BG}"/>
+    <rect x="39" y="110" width="{progress_width:.1f}" height="9" rx="4.5" fill="url(#greenBar)"/>
 
-  <rect x="16" y="116" width="128" height="9" rx="4.5" fill="{GREEN_BG}"/>
-  <rect x="16" y="116" width="{progress_width:.1f}" height="9" rx="4.5" fill="url(#greenBar)"/>
+    <text x="39" y="140" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&lt; 1 day</text>
+    <text x="171" y="140" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_under_24}%</text>
 
-  <text x="16" y="145" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&lt; 1 day</text>
-  <text x="194" y="145" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_under_24}%</text>
+    <text x="39" y="161" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">1-3 days</text>
+    <text x="171" y="161" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_24_72}%</text>
 
-  <text x="16" y="166" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">1-3 days</text>
-  <text x="194" y="166" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_24_72}%</text>
-
-  <text x="16" y="187" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&gt; 3 days</text>
-  <text x="194" y="187" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_over_72}%</text>
-
+    <text x="39" y="182" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">&gt; 3 days</text>
+    <text x="171" y="182" text-anchor="end" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{pct_over_72}%</text>
+  </g>
 </svg>
 '''
 
