@@ -4,7 +4,10 @@ import os
 import time
 import urllib.parse
 import urllib.request
-from collections import Counter, defaultdict
+import xml.etree.ElementTree as ET
+from collections import Counter
+from svgpathtools import parse_path
+
 
 USERNAME = "SaiyajinK"
 TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -12,8 +15,20 @@ TOKEN = os.environ.get("GITHUB_TOKEN")
 OUTPUT = "profile-summary-card-output/custom/stars-by-country.svg"
 CACHE_FILE = "profile-summary-card-output/custom/stars-country-cache.json"
 
-WIDTH = 980
-HEIGHT = 300
+WIDTH = 650
+HEIGHT = 230
+
+# Vraie carte SVG Robinson / SimpleMaps
+WORLD_MAP_URL = (
+    "https://simplemaps.com/static/demos/"
+    "resources/svg-library/svgs/world.svg"
+)
+
+# Drapeaux SVG
+FLAG_URL = (
+    "https://raw.githubusercontent.com/"
+    "lipis/flag-icons/main/flags/4x3/{code}.svg"
+)
 
 BG = "#0d1117"
 BORDER = "#30363d"
@@ -21,20 +36,24 @@ INNER_BORDER = "#26384c"
 
 TITLE = "#008cff"
 TEXT = "#c9d1d9"
-MUTED = "#9da7b3"
+MUTED = "#8b9bb0"
 
-MAP_FILL = "#162232"
-MAP_STROKE = "#29405c"
+MAP_FILL = "#142131"
+MAP_STROKE = "#263d58"
 
-BAR_BG = "#182537"
-BAR_FILL = "#4b97ff"
+BLUE = "#438cff"
+BAR_BG = "#192638"
 
-GLOW = "#6d78ff"
-CORE = "#b7c5ff"
+POINT = "#6678ff"
+POINT_CORE = "#d1d8ff"
 
 if not TOKEN:
     raise RuntimeError("GITHUB_TOKEN is required")
 
+
+# ------------------------------------------------------------
+# GitHub
+# ------------------------------------------------------------
 
 def graphql(query, variables=None):
     request = urllib.request.Request(
@@ -52,8 +71,13 @@ def graphql(query, variables=None):
         },
     )
 
-    with urllib.request.urlopen(request, timeout=60) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+    with urllib.request.urlopen(
+        request,
+        timeout=60,
+    ) as response:
+        payload = json.loads(
+            response.read().decode("utf-8")
+        )
 
     if "errors" in payload:
         raise RuntimeError(payload["errors"])
@@ -61,38 +85,64 @@ def graphql(query, variables=None):
     return payload["data"]
 
 
+# ------------------------------------------------------------
+# Download
+# ------------------------------------------------------------
+
+def download_text(url):
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent":
+                "SaiyajinK-GitHub-Profile/1.0"
+        },
+    )
+
+    with urllib.request.urlopen(
+        request,
+        timeout=60,
+    ) as response:
+        return response.read().decode("utf-8")
+
+
+# ------------------------------------------------------------
+# Cache géolocalisation
+# ------------------------------------------------------------
+
 def load_cache():
     try:
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+        with open(
+            CACHE_FILE,
+            "r",
+            encoding="utf-8",
+        ) as file:
+            return json.load(file)
     except Exception:
         return {}
 
 
 def save_cache(cache):
-    os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
-    with open(CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False, indent=2)
+    os.makedirs(
+        os.path.dirname(CACHE_FILE),
+        exist_ok=True,
+    )
+
+    with open(
+        CACHE_FILE,
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            cache,
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
 
 
-def format_number(value):
-    if value >= 1000:
-        text = f"{value / 1000:.1f}k"
-        return text.replace(".0k", "k")
-    return str(value)
-
-
-def flag_emoji(country_code):
-    if not country_code or len(country_code) != 2:
-        return "🌐"
-    return "".join(chr(127397 + ord(c)) for c in country_code.upper())
-
-
-def project(lon, lat, map_x, map_y, map_w, map_h):
-    x = map_x + ((lon + 180.0) / 360.0) * map_w
-    y = map_y + ((90.0 - lat) / 180.0) * map_h
-    return x, y
-
+# ------------------------------------------------------------
+# Localisation -> pays
+# ------------------------------------------------------------
 
 def geocode_location(location, cache):
     if location in cache:
@@ -107,20 +157,36 @@ def geocode_location(location, cache):
         }
     )
 
-    url = "https://nominatim.openstreetmap.org/search?" + params
+    url = (
+        "https://nominatim.openstreetmap.org/"
+        "search?"
+        + params
+    )
 
     request = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "SaiyajinK-GitHub-Profile/1.0",
-            "Accept-Language": "en",
+            "User-Agent":
+                "SaiyajinK-GitHub-Profile/1.0",
+            "Accept-Language": "fr",
         },
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            results = json.loads(response.read().decode("utf-8"))
-    except Exception:
+        with urllib.request.urlopen(
+            request,
+            timeout=30,
+        ) as response:
+            results = json.loads(
+                response.read().decode("utf-8")
+            )
+
+    except Exception as error:
+        print(
+            f"Geocoding failed for "
+            f"{location}: {error}"
+        )
+
         cache[location] = None
         return None
 
@@ -128,20 +194,34 @@ def geocode_location(location, cache):
         cache[location] = None
         return None
 
-    item = results[0]
-    address = item.get("address", {})
+    address = results[0].get(
+        "address",
+        {},
+    )
 
     result = {
-        "country_code": (address.get("country_code") or "").upper(),
-        "country_name": address.get("country") or "",
-        "lat": float(item["lat"]),
-        "lon": float(item["lon"]),
+        "country_code": (
+            address.get("country_code")
+            or ""
+        ).upper(),
+
+        "country_name": (
+            address.get("country")
+            or ""
+        ),
     }
 
     cache[location] = result
+
+    # Respect Nominatim
     time.sleep(1.05)
+
     return result
 
+
+# ------------------------------------------------------------
+# GitHub : étoiles
+# ------------------------------------------------------------
 
 repos_query = """
 query($login: String!) {
@@ -161,16 +241,27 @@ query($login: String!) {
 }
 """
 
-stargazers_query = """
-query($owner: String!, $name: String!, $after: String) {
-  repository(owner: $owner, name: $name) {
-    stargazers(first: 100, after: $after) {
+
+stars_query = """
+query(
+  $owner: String!,
+  $name: String!,
+  $after: String
+) {
+  repository(
+    owner: $owner,
+    name: $name
+  ) {
+    stargazers(
+      first: 100,
+      after: $after
+    ) {
       pageInfo {
         hasNextPage
         endCursor
       }
+
       nodes {
-        login
         location
       }
     }
@@ -178,252 +269,856 @@ query($owner: String!, $name: String!, $after: String) {
 }
 """
 
-repos_data = graphql(repos_query, {"login": USERNAME})
+
+repos_data = graphql(
+    repos_query,
+    {"login": USERNAME},
+)
+
 repos = [
     repo
-    for repo in repos_data["user"]["repositories"]["nodes"]
+    for repo
+    in repos_data["user"]["repositories"]["nodes"]
     if repo["stargazerCount"] > 0
 ]
 
+
 raw_locations = Counter()
 
-for repo in repos:
-    name = repo["name"]
-    after = None
 
-    print(f"Reading stargazers from {name}...")
+for repo in repos:
+    repo_name = repo["name"]
+
+    print(
+        f"Reading stars from "
+        f"{repo_name}..."
+    )
+
+    after = None
 
     while True:
         data = graphql(
-            stargazers_query,
+            stars_query,
             {
                 "owner": USERNAME,
-                "name": name,
+                "name": repo_name,
                 "after": after,
             },
         )
 
-        stargazers = data["repository"]["stargazers"]
+        stars = (
+            data["repository"]
+            ["stargazers"]
+        )
 
-        for user in stargazers["nodes"]:
-            location = (user.get("location") or "").strip()
+        for user in stars["nodes"]:
+            location = (
+                user.get("location")
+                or ""
+            ).strip()
+
             if location:
                 raw_locations[location] += 1
 
-        page_info = stargazers["pageInfo"]
-        if not page_info["hasNextPage"]:
+        page = stars["pageInfo"]
+
+        if not page["hasNextPage"]:
             break
 
-        after = page_info["endCursor"]
+        after = page["endCursor"]
 
+
+# ------------------------------------------------------------
+# Résolution pays
+# ------------------------------------------------------------
 
 cache = load_cache()
 
 country_counts = Counter()
 country_names = {}
-map_points = defaultdict(lambda: {"count": 0, "lat": 0.0, "lon": 0.0})
 
-resolved_total = 0
 
-for index, (location, count) in enumerate(raw_locations.most_common(), start=1):
-    print(f"Geocoding {index}/{len(raw_locations)}: {location}")
-    geo = geocode_location(location, cache)
+for index, (
+    location,
+    count,
+) in enumerate(
+    raw_locations.most_common(),
+    start=1,
+):
+    print(
+        f"Geocoding {index}/"
+        f"{len(raw_locations)}: "
+        f"{location}"
+    )
+
+    geo = geocode_location(
+        location,
+        cache,
+    )
 
     if not geo:
         continue
 
-    country_code = geo["country_code"]
-    country_name = geo["country_name"]
+    code = geo["country_code"]
 
-    if not country_code:
+    if len(code) != 2:
         continue
 
-    country_counts[country_code] += count
-    country_names[country_code] = country_name
-    resolved_total += count
+    country_counts[code] += count
 
-    key = (round(geo["lat"], 1), round(geo["lon"], 1))
-    map_points[key]["count"] += count
-    map_points[key]["lat"] = geo["lat"]
-    map_points[key]["lon"] = geo["lon"]
+    country_names[code] = (
+        geo["country_name"]
+        or code
+    )
+
 
 save_cache(cache)
 
-top_countries = country_counts.most_common(5)
-top_sum = sum(count for _, count in top_countries)
-other_count = max(resolved_total - top_sum, 0)
 
-display_total = max(resolved_total, 1)
-max_count = max([count for _, count in top_countries] or [1])
+# ------------------------------------------------------------
+# Vrai template SimpleMaps
+# ------------------------------------------------------------
 
-MAP_X = 38
-MAP_Y = 84
-MAP_W = 492
-MAP_H = 170
+print("Downloading SimpleMaps world template...")
 
-world_paths = []
-WORLD_URL = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+world_svg_text = download_text(
+    WORLD_MAP_URL
+)
 
-try:
-    request = urllib.request.Request(
-        WORLD_URL,
-        headers={"User-Agent": "SaiyajinK-GitHub-Profile/1.0"},
+ET.register_namespace(
+    "",
+    "http://www.w3.org/2000/svg",
+)
+
+world_root = ET.fromstring(
+    world_svg_text
+)
+
+viewbox = world_root.get(
+    "viewBox",
+    "0 0 1000 507",
+)
+
+vb = [
+    float(value)
+    for value in viewbox.split()
+]
+
+VB_X = vb[0]
+VB_Y = vb[1]
+VB_W = vb[2]
+VB_H = vb[3]
+
+
+# ------------------------------------------------------------
+# Nettoyage graphique + centres des pays
+# ------------------------------------------------------------
+
+country_boxes = {}
+
+
+def add_bbox(code, bbox):
+    xmin, xmax, ymin, ymax = bbox
+
+    if code not in country_boxes:
+        country_boxes[code] = [
+            xmin,
+            xmax,
+            ymin,
+            ymax,
+        ]
+        return
+
+    old = country_boxes[code]
+
+    country_boxes[code] = [
+        min(old[0], xmin),
+        max(old[1], xmax),
+        min(old[2], ymin),
+        max(old[3], ymax),
+    ]
+
+
+for element in world_root.iter():
+    tag = element.tag.split("}")[-1]
+
+    if tag not in (
+        "path",
+        "polygon",
+        "polyline",
+    ):
+        continue
+
+    element.set(
+        "fill",
+        MAP_FILL,
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        world = json.loads(response.read().decode("utf-8"))
 
-    for feature in world["features"]:
-        geometry = feature.get("geometry")
-        if not geometry:
-            continue
+    element.set(
+        "stroke",
+        MAP_STROKE,
+    )
 
-        geom_type = geometry["type"]
-        coordinates = geometry["coordinates"]
+    element.set(
+        "stroke-width",
+        "0.7",
+    )
 
-        if geom_type == "Polygon":
-            polygons = [coordinates]
-        elif geom_type == "MultiPolygon":
-            polygons = coordinates
-        else:
-            continue
+    element.attrib.pop(
+        "style",
+        None,
+    )
 
-        for polygon in polygons:
-            for ring in polygon:
-                if not ring:
-                    continue
+    if tag != "path":
+        continue
 
-                commands = []
-                for i, (lon, lat) in enumerate(ring):
-                    x, y = project(lon, lat, MAP_X, MAP_Y, MAP_W, MAP_H)
-                    commands.append(
-                        f'{"M" if i == 0 else "L"}{x:.1f},{y:.1f}'
-                    )
-                commands.append("Z")
+    d = element.get("d")
 
-                world_paths.append(
-                    f'<path d="{" ".join(commands)}" fill="{MAP_FILL}" stroke="{MAP_STROKE}" stroke-width="0.45"/>'
+    if not d:
+        continue
+
+    code = (
+        element.get("id")
+        or ""
+    ).upper()
+
+    if len(code) != 2:
+        continue
+
+    try:
+        bbox = parse_path(d).bbox()
+        add_bbox(
+            code,
+            bbox,
+        )
+    except Exception:
+        pass
+
+
+# ------------------------------------------------------------
+# Contenu SVG du template
+# ------------------------------------------------------------
+
+world_inner = "".join(
+    ET.tostring(
+        child,
+        encoding="unicode",
+    )
+    for child in list(world_root)
+)
+
+
+# ------------------------------------------------------------
+# Bulles proportionnelles
+# ------------------------------------------------------------
+
+max_stars = max(
+    country_counts.values(),
+    default=1,
+)
+
+bubble_svg = []
+
+
+for code, count in country_counts.items():
+    if code not in country_boxes:
+        continue
+
+    xmin, xmax, ymin, ymax = (
+        country_boxes[code]
+    )
+
+    cx = (
+        xmin + xmax
+    ) / 2
+
+    cy = (
+        ymin + ymax
+    ) / 2
+
+    ratio = (
+        count / max_stars
+    )
+
+    radius = (
+        7
+        + math.sqrt(ratio) * 24
+    )
+
+    bubble_svg.append(
+        f'''
+        <circle
+            cx="{cx:.2f}"
+            cy="{cy:.2f}"
+            r="{radius * 2.1:.2f}"
+            fill="{POINT}"
+            opacity="0.08"
+        />
+
+        <circle
+            cx="{cx:.2f}"
+            cy="{cy:.2f}"
+            r="{radius * 1.45:.2f}"
+            fill="{POINT}"
+            opacity="0.15"
+        />
+
+        <circle
+            cx="{cx:.2f}"
+            cy="{cy:.2f}"
+            r="{radius:.2f}"
+            fill="{POINT}"
+            opacity="0.78"
+        />
+
+        <circle
+            cx="{cx:.2f}"
+            cy="{cy:.2f}"
+            r="{max(2.5, radius * 0.18):.2f}"
+            fill="{POINT_CORE}"
+        />
+        '''
+    )
+
+
+# ------------------------------------------------------------
+# Flags inline
+# ------------------------------------------------------------
+
+flag_cache = {}
+
+
+def flag_svg(code, x, y):
+    code = code.lower()
+
+    if code not in flag_cache:
+        try:
+            source = download_text(
+                FLAG_URL.format(
+                    code=code
                 )
-except Exception as error:
-    print(f"World map download failed: {error}")
+            )
+
+            root = ET.fromstring(
+                source
+            )
+
+            flag_viewbox = root.get(
+                "viewBox",
+                "0 0 640 480",
+            )
+
+            inner = "".join(
+                ET.tostring(
+                    child,
+                    encoding="unicode",
+                )
+                for child in list(root)
+            )
+
+            flag_cache[code] = (
+                flag_viewbox,
+                inner,
+            )
+
+        except Exception:
+            flag_cache[code] = None
+
+    result = flag_cache[code]
+
+    if not result:
+        return (
+            f'<text x="{x}" y="{y + 12}" '
+            f'fill="{MUTED}" '
+            f'font-size="10">'
+            f'{code.upper()}</text>'
+        )
+
+    flag_viewbox, inner = result
+
+    return f'''
+    <svg
+        x="{x}"
+        y="{y}"
+        width="19"
+        height="14"
+        viewBox="{flag_viewbox}"
+        preserveAspectRatio="xMidYMid slice"
+    >
+        {inner}
+    </svg>
+    '''
 
 
-point_svg = []
-for _, point in sorted(
-    map_points.items(),
-    key=lambda item: item[1]["count"],
-    reverse=True,
-)[:40]:
-    x, y = project(point["lon"], point["lat"], MAP_X, MAP_Y, MAP_W, MAP_H)
-    count = point["count"]
+# ------------------------------------------------------------
+# Classement
+# ------------------------------------------------------------
 
-    radius = min(3.0 + math.sqrt(count) * 1.1, 12.0)
-    outer = radius * 2.4
+top_countries = (
+    country_counts.most_common(5)
+)
 
-    point_svg.append(
+resolved_total = sum(
+    country_counts.values()
+)
+
+top_total = sum(
+    count
+    for _, count
+    in top_countries
+)
+
+other_count = max(
+    resolved_total - top_total,
+    0,
+)
+
+display_total = max(
+    resolved_total,
+    1,
+)
+
+top_max = max(
+    [
+        count
+        for _, count
+        in top_countries
+    ]
+    or [1]
+)
+
+
+def number(value):
+    if value >= 1000:
+        result = (
+            f"{value / 1000:.1f}k"
+        )
+        return result.replace(
+            ".0k",
+            "k",
+        )
+
+    return str(value)
+
+
+rows = []
+
+ROW_Y = 76
+ROW_GAP = 25
+
+for index, (
+    code,
+    count,
+) in enumerate(
+    top_countries,
+    start=1,
+):
+    y = (
+        ROW_Y
+        + (index - 1)
+        * ROW_GAP
+    )
+
+    percent = (
+        count
+        / display_total
+        * 100
+    )
+
+    bar_width = (
+        count
+        / top_max
+        * 72
+    )
+
+    country_name = (
+        country_names.get(
+            code,
+            code,
+        )
+    )
+
+    rows.append(
         f'''
-        <circle cx="{x:.1f}" cy="{y:.1f}" r="{outer:.1f}" fill="{GLOW}" opacity="0.10"/>
-        <circle cx="{x:.1f}" cy="{y:.1f}" r="{radius:.1f}" fill="{GLOW}" opacity="0.88"/>
-        <circle cx="{x:.1f}" cy="{y:.1f}" r="2" fill="{CORE}"/>
+        <text
+            x="410"
+            y="{y}"
+            fill="{MUTED}"
+            font-size="10"
+            font-family="Segoe UI, Arial, sans-serif"
+        >{index}</text>
+
+        {flag_svg(code, 428, y - 12)}
+
+        <text
+            x="454"
+            y="{y}"
+            fill="{TEXT}"
+            font-size="10.5"
+            font-family="Segoe UI, Arial, sans-serif"
+        >{country_name}</text>
+
+        <text
+            x="544"
+            y="{y}"
+            text-anchor="end"
+            fill="{TEXT}"
+            font-size="10"
+            font-family="Segoe UI, Arial, sans-serif"
+        >{number(count)}</text>
+
+        <rect
+            x="557"
+            y="{y - 8}"
+            width="72"
+            height="7"
+            rx="3.5"
+            fill="{BAR_BG}"
+        />
+
+        <rect
+            x="557"
+            y="{y - 8}"
+            width="{bar_width:.2f}"
+            height="7"
+            rx="3.5"
+            fill="{BLUE}"
+        />
+
+        <text
+            x="638"
+            y="{y}"
+            text-anchor="end"
+            fill="{TEXT}"
+            font-size="10"
+            font-family="Segoe UI, Arial, sans-serif"
+        >{percent:.0f}%</text>
         '''
     )
 
 
-rows_svg = []
-list_x_rank = 580
-list_x_flag = 612
-list_x_name = 646
-list_x_value = 820
-list_x_bar = 835
-list_x_pct = 950
-row_start_y = 108
-row_gap = 28
-bar_width = 92
+other_percent = (
+    other_count
+    / display_total
+    * 100
+)
 
-for i, (code, count) in enumerate(top_countries, start=1):
-    y = row_start_y + (i - 1) * row_gap
-    percent = count / display_total * 100
-    progress = (count / max_count) * bar_width
-    name = country_names.get(code, code)
+other_bar = min(
+    (
+        other_count
+        / top_max
+        * 72
+    ),
+    72,
+)
 
-    rows_svg.append(
-        f'''
-        <text x="{list_x_rank}" y="{y}" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{i}</text>
-        <text x="{list_x_flag}" y="{y}" fill="{TEXT}" font-size="16" font-family="Segoe UI Emoji, Segoe UI, Arial">{flag_emoji(code)}</text>
-        <text x="{list_x_name}" y="{y}" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{name}</text>
-        <text x="{list_x_value}" y="{y}" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{format_number(count)}</text>
-        <rect x="{list_x_bar}" y="{y - 10}" width="{bar_width}" height="8" rx="4" fill="{BAR_BG}"/>
-        <rect x="{list_x_bar}" y="{y - 10}" width="{progress:.1f}" height="8" rx="4" fill="{BAR_FILL}"/>
-        <text x="{list_x_pct}" y="{y}" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{percent:.0f}%</text>
-        '''
-    )
 
-other_percent = other_count / display_total * 100
-other_progress = min((other_count / max_count) * bar_width, bar_width)
+# ------------------------------------------------------------
+# SVG final
+# ------------------------------------------------------------
 
-svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}">
-  <defs>
-    <linearGradient id="bgGlow" x1="0" y1="0" x2="{WIDTH}" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0c1118"/>
-      <stop offset="50%" stop-color="#0f1723"/>
-      <stop offset="100%" stop-color="#0c1118"/>
-    </linearGradient>
-    <filter id="glow" x="-200%" y="-200%" width="400%" height="400%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
+svg = f'''<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="{WIDTH}"
+    height="{HEIGHT}"
+    viewBox="0 0 {WIDTH} {HEIGHT}"
+>
 
-  <rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="8" fill="url(#bgGlow)" stroke="{BORDER}"/>
+    <defs>
+        <linearGradient
+            id="cardBg"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+        >
+            <stop
+                offset="0%"
+                stop-color="#0d1117"
+            />
 
-  <path d="M23 25 L28 13 L33 25 L46 26 L36 34 L39 46 L28 39 L17 46 L20 34 L10 26 Z"
-        fill="none" stroke="{TITLE}" stroke-width="1.8" stroke-linejoin="round"/>
-  <text x="52" y="34" fill="{TITLE}" font-size="22" font-weight="600" font-family="Segoe UI, Arial, sans-serif">Étoiles par pays</text>
+            <stop
+                offset="100%"
+                stop-color="#101722"
+            />
+        </linearGradient>
+    </defs>
 
-  <text x="{WIDTH - 54}" y="32" text-anchor="end" fill="{MUTED}" font-size="11" font-family="Segoe UI, Arial, sans-serif">Répartition géographique des étoiles de mes dépôts</text>
-  <circle cx="{WIDTH - 24}" cy="26" r="9" fill="none" stroke="{MUTED}" stroke-width="1.4" opacity="0.9"/>
-  <text x="{WIDTH - 24}" y="30" text-anchor="middle" fill="{MUTED}" font-size="11" font-family="Segoe UI, Arial, sans-serif">i</text>
+    <rect
+        x="0.5"
+        y="0.5"
+        width="{WIDTH - 1}"
+        height="{HEIGHT - 1}"
+        rx="7"
+        fill="url(#cardBg)"
+        stroke="{BORDER}"
+    />
 
-  <rect x="14" y="48" width="{WIDTH - 28}" height="{HEIGHT - 64}" rx="7" fill="none" stroke="{INNER_BORDER}"/>
+    <!-- Étoile -->
+    <path
+        d="
+        M20 12
+        L23.6 22
+        L34 22.3
+        L25.8 28.7
+        L28.8 39
+        L20 33
+        L11.2 39
+        L14.2 28.7
+        L6 22.3
+        L16.4 22 Z
+        "
+        fill="none"
+        stroke="{TITLE}"
+        stroke-width="1.7"
+        stroke-linejoin="round"
+    />
 
-  <line x1="545" y1="66" x2="545" y2="{HEIGHT - 20}" stroke="{INNER_BORDER}"/>
+    <text
+        x="43"
+        y="31"
+        fill="{TITLE}"
+        font-size="17"
+        font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Étoiles par pays</text>
 
-  {''.join(world_paths)}
+    <text
+        x="615"
+        y="29"
+        text-anchor="end"
+        fill="{MUTED}"
+        font-size="8.5"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Répartition géographique des étoiles de mes dépôts</text>
 
-  <g filter="url(#glow)">
-    {''.join(point_svg)}
-  </g>
+    <circle
+        cx="632"
+        cy="25"
+        r="7"
+        fill="none"
+        stroke="{MUTED}"
+        stroke-width="1"
+    />
 
-  <rect x="34" y="225" width="132" height="46" rx="7" fill="#101722" stroke="{INNER_BORDER}"/>
-  <text x="47" y="242" fill="{MUTED}" font-size="9" font-family="Segoe UI, Arial, sans-serif">Nombre d’étoiles</text>
+    <text
+        x="632"
+        y="28"
+        text-anchor="middle"
+        fill="{MUTED}"
+        font-size="8"
+        font-family="Segoe UI, Arial, sans-serif"
+    >i</text>
 
-  <circle cx="48" cy="256" r="2" fill="{GLOW}"/>
-  <circle cx="74" cy="256" r="3.5" fill="{GLOW}"/>
-  <circle cx="101" cy="256" r="5" fill="{GLOW}"/>
-  <circle cx="133" cy="256" r="7.5" fill="{GLOW}"/>
+    <rect
+        x="13"
+        y="45"
+        width="624"
+        height="172"
+        rx="6"
+        fill="none"
+        stroke="{INNER_BORDER}"
+    />
 
-  <text x="48" y="269" text-anchor="middle" fill="{MUTED}" font-size="8" font-family="Segoe UI, Arial, sans-serif">1</text>
-  <text x="74" y="269" text-anchor="middle" fill="{MUTED}" font-size="8" font-family="Segoe UI, Arial, sans-serif">10</text>
-  <text x="101" y="269" text-anchor="middle" fill="{MUTED}" font-size="8" font-family="Segoe UI, Arial, sans-serif">50</text>
-  <text x="133" y="269" text-anchor="middle" fill="{MUTED}" font-size="8" font-family="Segoe UI, Arial, sans-serif">100+</text>
+    <!-- vraie carte Robinson, aucune déformation -->
+    <svg
+        x="20"
+        y="55"
+        width="365"
+        height="150"
+        viewBox="{viewbox}"
+        preserveAspectRatio="xMidYMid meet"
+    >
+        {world_inner}
 
-  {''.join(rows_svg)}
+        {''.join(bubble_svg)}
+    </svg>
 
-  <line x1="{list_x_rank}" y1="256" x2="950" y2="256" stroke="{INNER_BORDER}"/>
+    <!-- Légende -->
+    <rect
+        x="28"
+        y="167"
+        width="104"
+        height="41"
+        rx="5"
+        fill="#101722"
+        stroke="{INNER_BORDER}"
+    />
 
-  <text x="{list_x_rank + 2}" y="281" fill="{TEXT}" font-size="16" font-family="Segoe UI Emoji, Segoe UI, Arial">🌐</text>
-  <text x="{list_x_name}" y="281" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">Autres pays</text>
-  <text x="{list_x_value}" y="281" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{format_number(other_count)}</text>
-  <rect x="{list_x_bar}" y="271" width="{bar_width}" height="8" rx="4" fill="{BAR_BG}"/>
-  <rect x="{list_x_bar}" y="271" width="{other_progress:.1f}" height="8" rx="4" fill="{BAR_FILL}"/>
-  <text x="{list_x_pct}" y="281" text-anchor="end" fill="{TEXT}" font-size="12" font-family="Segoe UI, Arial, sans-serif">{other_percent:.0f}%</text>
+    <text
+        x="37"
+        y="181"
+        fill="{MUTED}"
+        font-size="7"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Nombre d’étoiles</text>
+
+    <circle
+        cx="40"
+        cy="193"
+        r="2"
+        fill="{POINT}"
+    />
+
+    <circle
+        cx="62"
+        cy="193"
+        r="3.2"
+        fill="{POINT}"
+    />
+
+    <circle
+        cx="87"
+        cy="193"
+        r="5"
+        fill="{POINT}"
+    />
+
+    <circle
+        cx="116"
+        cy="193"
+        r="8"
+        fill="{POINT}"
+    />
+
+    <text
+        x="40"
+        y="204"
+        text-anchor="middle"
+        fill="{MUTED}"
+        font-size="6"
+        font-family="Segoe UI, Arial, sans-serif"
+    >1</text>
+
+    <text
+        x="62"
+        y="204"
+        text-anchor="middle"
+        fill="{MUTED}"
+        font-size="6"
+        font-family="Segoe UI, Arial, sans-serif"
+    >10</text>
+
+    <text
+        x="87"
+        y="204"
+        text-anchor="middle"
+        fill="{MUTED}"
+        font-size="6"
+        font-family="Segoe UI, Arial, sans-serif"
+    >50</text>
+
+    <text
+        x="116"
+        y="204"
+        text-anchor="middle"
+        fill="{MUTED}"
+        font-size="6"
+        font-family="Segoe UI, Arial, sans-serif"
+    >100+</text>
+
+    <!-- séparation -->
+    <line
+        x1="397"
+        y1="58"
+        x2="397"
+        y2="208"
+        stroke="{INNER_BORDER}"
+    />
+
+    <!-- classement -->
+    {''.join(rows)}
+
+    <line
+        x1="409"
+        y1="192"
+        x2="632"
+        y2="192"
+        stroke="{INNER_BORDER}"
+    />
+
+    <!-- autres pays -->
+    <circle
+        cx="429"
+        cy="207"
+        r="7"
+        fill="none"
+        stroke="{MUTED}"
+        stroke-width="1"
+    />
+
+    <path
+        d="
+        M422 207 H436
+        M429 200
+        C425 203 425 211 429 214
+        M429 200
+        C433 203 433 211 429 214
+        "
+        fill="none"
+        stroke="{MUTED}"
+        stroke-width="0.8"
+    />
+
+    <text
+        x="454"
+        y="210"
+        fill="{TEXT}"
+        font-size="10.5"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Autres pays</text>
+
+    <text
+        x="544"
+        y="210"
+        text-anchor="end"
+        fill="{TEXT}"
+        font-size="10"
+        font-family="Segoe UI, Arial, sans-serif"
+    >{number(other_count)}</text>
+
+    <rect
+        x="557"
+        y="202"
+        width="72"
+        height="7"
+        rx="3.5"
+        fill="{BAR_BG}"
+    />
+
+    <rect
+        x="557"
+        y="202"
+        width="{other_bar:.2f}"
+        height="7"
+        rx="3.5"
+        fill="{BLUE}"
+    />
+
+    <text
+        x="638"
+        y="210"
+        text-anchor="end"
+        fill="{TEXT}"
+        font-size="10"
+        font-family="Segoe UI, Arial, sans-serif"
+    >{other_percent:.0f}%</text>
+
 </svg>
 '''
 
-os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
-with open(OUTPUT, "w", encoding="utf-8") as f:
-    f.write(svg)
+os.makedirs(
+    os.path.dirname(OUTPUT),
+    exist_ok=True,
+)
 
-print(f"Generated {OUTPUT}")
+with open(
+    OUTPUT,
+    "w",
+    encoding="utf-8",
+) as file:
+    file.write(svg)
+
+print(
+    f"Generated {OUTPUT}"
+)
