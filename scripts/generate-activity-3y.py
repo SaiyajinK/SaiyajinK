@@ -9,13 +9,11 @@ from datetime import datetime, timezone
 USERNAME = "SaiyajinK"
 TOKEN = os.environ.get("GITHUB_TOKEN")
 
-OUTPUT = "profile-summary-card-output/custom/activity-4y.svg"
+OUTPUT = "profile-summary-card-output/custom/activity-3y.svg"
 
 WIDTH = 620
 HEIGHT = 220
 
-# GitHub Search API accepte environ 30 requêtes/minute
-# pour un utilisateur authentifié.
 REQUEST_DELAY = 2.2
 MAX_RETRIES = 5
 
@@ -25,7 +23,8 @@ now = datetime.now(timezone.utc)
 year = now.year
 month = now.month
 
-for offset in range(47, -1, -1):
+# 36 mois = 3 années
+for offset in range(35, -1, -1):
     m = month - offset
     y = year
 
@@ -74,7 +73,6 @@ def github_request(url):
                 )
 
             else:
-                # Secondary rate limit
                 wait_time = 15 * (attempt + 1)
 
             print(
@@ -126,8 +124,6 @@ for index, (y, m) in enumerate(months):
         data.get("total_count", 0)
     )
 
-    # Évite de dépasser la limite spécifique
-    # de l'API GitHub Search.
     if index < len(months) - 1:
         time.sleep(REQUEST_DELAY)
 
@@ -199,7 +195,6 @@ area_path = (
     + f" L {points[0][0]:.2f},{plot_bottom} Z"
 )
 
-
 vertical_grid = []
 
 for i in range(len(months)):
@@ -219,7 +214,6 @@ for i in range(len(months)):
         />
         '''
     )
-
 
 major_year_lines = []
 year_labels = []
@@ -245,7 +239,6 @@ for i, (y, m) in enumerate(months):
             />
             '''
         )
-
 
 for target_year in sorted(set(y for y, _ in months)):
     indices = [
@@ -278,7 +271,6 @@ for target_year in sorted(set(y for y, _ in months)):
         '''
     )
 
-
 ticks = []
 
 for fraction in [0, 1 / 3, 2 / 3, 1]:
@@ -301,7 +293,6 @@ for fraction in [0, 1 / 3, 2 / 3, 1]:
         '''
     )
 
-
 svg = f'''<svg
     xmlns="http://www.w3.org/2000/svg"
     width="{WIDTH}"
@@ -310,7 +301,7 @@ svg = f'''<svg
 >
     <defs>
         <linearGradient
-            id="activityFill4Y"
+            id="activityFill3Y"
             x1="0"
             y1="0"
             x2="0"
@@ -329,7 +320,7 @@ svg = f'''<svg
         </linearGradient>
 
         <linearGradient
-            id="activityLine4Y"
+            id="activityLine3Y"
             x1="0"
             y1="0"
             x2="1"
@@ -372,7 +363,7 @@ svg = f'''<svg
         fill="#9da7b3"
         font-size="11"
         font-family="Segoe UI, Arial, sans-serif"
-    >Commits over the last 4 years</text>
+    >Commits over the last 3 years</text>
 
     {''.join(vertical_grid)}
     {''.join(major_year_lines)}
@@ -380,13 +371,13 @@ svg = f'''<svg
 
     <path
         d="{area_path}"
-        fill="url(#activityFill4Y)"
+        fill="url(#activityFill3Y)"
     />
 
     <path
         d="{line_path}"
         fill="none"
-        stroke="url(#activityLine4Y)"
+        stroke="url(#activityLine3Y)"
         stroke-width="3"
         stroke-linecap="round"
         stroke-linejoin="round"
