@@ -30,7 +30,7 @@ FLAG_URL = (
 
 BG = "#0d1117"
 BORDER = "#30363d"
-INNER_BORDER = "#26384c"
+DIVIDER = "#222c36"
 
 TITLE = "#008cff"
 TEXT = "#c9d1d9"
@@ -208,6 +208,8 @@ repos = [
     if repo["stargazerCount"] > 0
 ]
 
+total_stars = sum(repo["stargazerCount"] for repo in repos)
+
 raw_locations = Counter()
 
 for repo in repos:
@@ -265,10 +267,9 @@ save_cache(cache)
 
 top_countries = country_counts.most_common(5)
 
-resolved_total = sum(country_counts.values())
 top_total = sum(count for _, count in top_countries)
-other_count = max(resolved_total - top_total, 0)
-display_total = max(resolved_total, 1)
+other_count = max(total_stars - top_total, 0)
+display_total = max(total_stars, 1)
 max_count = max([count for _, count in top_countries] or [1])
 
 print("Downloading world map template...")
@@ -279,9 +280,6 @@ ET.register_namespace("", "http://www.w3.org/2000/svg")
 world_root = ET.fromstring(world_svg_text)
 
 viewbox = world_root.get("viewBox", "0 0 1000 507")
-vb = [float(value) for value in viewbox.split()]
-VB_W = vb[2]
-VB_H = vb[3]
 
 country_boxes = {}
 
@@ -445,35 +443,33 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGH
   <circle cx="628" cy="24" r="7" fill="none" stroke="{MUTED}" stroke-width="1"/>
   <text x="628" y="27" text-anchor="middle" fill="{MUTED}" font-size="8" font-family="Segoe UI, Arial, sans-serif">i</text>
 
-  <rect x="10" y="42" width="630" height="176" rx="6" fill="none" stroke="{INNER_BORDER}"/>
-
   <svg
-      x="20"
-      y="58"
-      width="350"
-      height="112"
+      x="18"
+      y="54"
+      width="356"
+      height="126"
       viewBox="{viewbox}"
       preserveAspectRatio="xMidYMid meet">
       {world_inner}
       {''.join(bubble_svg)}
   </svg>
 
-  <rect x="24" y="171" width="96" height="30" rx="5" fill="#101722" stroke="{INNER_BORDER}"/>
-  <text x="32" y="182" fill="{MUTED}" font-size="6.4" font-family="Segoe UI, Arial, sans-serif">Number of stars</text>
-  <circle cx="35" cy="192" r="1.7" fill="{POINT}"/>
-  <circle cx="53" cy="192" r="2.6" fill="{POINT}"/>
-  <circle cx="74" cy="192" r="4.0" fill="{POINT}"/>
-  <circle cx="99" cy="192" r="6.3" fill="{POINT}"/>
-  <text x="35" y="200" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">1</text>
-  <text x="53" y="200" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">10</text>
-  <text x="74" y="200" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">50</text>
-  <text x="99" y="200" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">100+</text>
+  <rect x="25" y="182" width="98" height="28" rx="5" fill="#101722" stroke="#222c36"/>
+  <text x="33" y="192" fill="{MUTED}" font-size="6.4" font-family="Segoe UI, Arial, sans-serif">Number of stars</text>
+  <circle cx="36" cy="201" r="1.7" fill="{POINT}"/>
+  <circle cx="54" cy="201" r="2.6" fill="{POINT}"/>
+  <circle cx="75" cy="201" r="4.0" fill="{POINT}"/>
+  <circle cx="100" cy="201" r="6.3" fill="{POINT}"/>
+  <text x="36" y="209" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">1</text>
+  <text x="54" y="209" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">10</text>
+  <text x="75" y="209" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">50</text>
+  <text x="100" y="209" text-anchor="middle" fill="{MUTED}" font-size="5.8" font-family="Segoe UI, Arial, sans-serif">100+</text>
 
-  <line x1="392" y1="56" x2="392" y2="206" stroke="{INNER_BORDER}"/>
+  <line x1="392" y1="56" x2="392" y2="206" stroke="{DIVIDER}"/>
 
   {''.join(rows)}
 
-  <line x1="406" y1="189" x2="632" y2="189" stroke="{INNER_BORDER}"/>
+  <line x1="406" y1="189" x2="632" y2="189" stroke="{DIVIDER}"/>
 
   <circle cx="422" cy="204" r="6.5" fill="none" stroke="{MUTED}" stroke-width="1"/>
   <path d="M416 204 H428 M422 198 C419 200 419 208 422 210 M422 198 C425 200 425 208 422 210"
