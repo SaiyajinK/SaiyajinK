@@ -6,24 +6,41 @@ TOKEN = os.environ.get("GITHUB_TOKEN")
 
 OUTPUT = "profile-summary-card-output/custom/languages-5-equal-v2.svg"
 
-WIDTH = 474
-HEIGHT = 218
+WIDTH = 500
+HEIGHT = 220
 
-BG = "#0D1117"
-BORDER = "#30363D"
-TITLE = "#00A4EF"
-TEXT = "#F0F6FC"
-MUTED = "#9DA7B3"
+BG = "#0d1117"
+BORDER = "#30363d"
+TITLE = "#008cff"
+TEXT = "#c9d1d9"
+MUTED = "#9da7b3"
 
-LANGUAGES = [
-    ("CSS", "#C653F4"),
-    ("C++", "#FF4D8A"),
-    ("JavaScript", "#F5DF4D"),
-    ("Python", "#4AA7F5"),
-    ("PowerShell", "#0878CC"),
-    ("Lua", "#2EA44F"),
-    ("Shell", "#FF812D"),
-    ("TypeScript", "#16C6C8"),
+LANG_COLORS = {
+    "CSS": "#a855f7",
+    "C++": "#ff4d94",
+    "JavaScript": "#f6e05e",
+    "Python": "#4aa8ff",
+    "PowerShell": "#0058b8",
+    "C#": "#8b5cf6",
+    "TypeScript": "#3178c6",
+    "HTML": "#e34c26",
+    "XAML": "#6ea8fe",
+    "Batchfile": "#6b7280",
+    "Shell": "#89e051",
+}
+
+PREFERRED_ORDER = [
+    "CSS",
+    "C++",
+    "JavaScript",
+    "Python",
+    "PowerShell",
+    "C#",
+    "TypeScript",
+    "HTML",
+    "XAML",
+    "Shell",
+    "Batchfile",
 ]
 
 if not TOKEN:
@@ -37,15 +54,10 @@ def graphql(query, variables=None):
             "Authorization": f"Bearer {TOKEN}",
             "Accept": "application/vnd.github+json",
         },
-        json={
-            "query": query,
-            "variables": variables or {},
-        },
+        json={"query": query, "variables": variables or {}},
         timeout=30,
     )
-
     response.raise_for_status()
-
     data = response.json()
 
     if "errors" in data:
@@ -63,27 +75,16 @@ query($login: String!, $after: String) {
       ownerAffiliations: OWNER
       isFork: false
       privacy: PUBLIC
-      orderBy: {
-        field: PUSHED_AT
-        direction: DESC
-      }
+      orderBy: {field: PUSHED_AT, direction: DESC}
     ) {
       pageInfo {
         hasNextPage
         endCursor
       }
-
       nodes {
-        languages(
-          first: 100
-          orderBy: {
-            field: SIZE
-            direction: DESC
-          }
-        ) {
+        languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
           edges {
             size
-
             node {
               name
             }
@@ -95,264 +96,170 @@ query($login: String!, $after: String) {
 }
 """
 
-
 language_sizes = {}
 after = None
 
-
 while True:
-    data = graphql(
-        query,
-        {
-            "login": USERNAME,
-            "after": after,
-        },
-    )
+    data = graphql(query, {"login": USERNAME, "after": after})
+    repos = data["user"]["repositories"]["nodes"]
 
-    repositories = (
-        data["user"]
-        ["repositories"]
-    )
-
-    for repo in repositories["nodes"]:
+    for repo in repos:
         for edge in repo["languages"]["edges"]:
             name = edge["node"]["name"]
             size = edge["size"]
+            language_sizes[name] = language_sizes.get(name, 0) + size
 
-            language_sizes[name] = (
-                language_sizes.get(name, 0)
-                + size
-            )
-
-    page_info = repositories["pageInfo"]
-
+    page_info = data["user"]["repositories"]["pageInfo"]
     if not page_info["hasNextPage"]:
         break
 
     after = page_info["endCursor"]
 
+if not language_sizes:
+    language_sizes = {
+        "CSS": 1,
+        "C++": 1,
+        "JavaScript": 1,
+        "Python": 1,
+        "PowerShell": 1,
+    }
 
-# On conserve exactement les 8 langages demandés.
-# Un langage absent reste affiché à 0.00 %.
+selected = []
+
+for name in PREFERRED_ORDER:
+    if name in language_sizes:
+        selected.append((name, language_sizes[name]))
+
+if len(selected) < 5:
+    remaining = sorted(
+        [(k, v) for k, v in language_sizes.items() if k not in {n for n, _ in selected}],
+        key=lambda x: x[1],
+        reverse=True,
+    )
+    selected.extend(remaining[: 5 - len(selected)])
+
+selected = selected[:5]
+
+total = sum(size for _, size in selected)
+if total == 0:
+    total = 1
 
 items = []
-
-for name, color in LANGUAGES:
+for name, size in selected:
+    percent = size / total * 100
     items.append(
         {
             "name": name,
-            "color": color,
-            "size": language_sizes.get(name, 0),
+            "size": size,
+            "percent": percent,
+            "color": LANG_COLORS.get(name, "#58a6ff"),
         }
     )
 
+card_x = 12
+card_y = 16
+card_w = WIDTH - 24
+card_h = HEIGHT - 32
 
-# Les pourcentages sont calculés uniquement
-# sur les 8 langages affichés.
+bar_margin = 28
+bar_h = 8
 
-total = sum(
-    item["size"]
-    for item in items
-)
+content_height = 124
+content_top = card_y + (card_h - content_height) / 2
 
-if total <= 0:
-    total = 1
+title_y = content_top + 18
+bar_y = content_top + 40
+dot_y = content_top + 68
+label_y = content_top + 91
+percent_y = content_top + 116
 
+bar_x = card_x + bar_margin
+bar_w = card_w - (bar_margin * 2)
 
-for item in items:
-    item["percent"] = (
-        item["size"]
-        / total
-        * 100
+segment_w = bar_w / len(items)
+centers = [bar_x + segment_w * i + segment_w / 2 for i in range(len(items))]
+
+bar_segments = []
+for i, item in enumerate(items):
+    x = bar_x + segment_w * i
+
+    if i == 0:
+        path = (
+            f"M{x + 4:.2f},{bar_y:.2f} "
+            f"H{x + segment_w:.2f} "
+            f"V{bar_y + bar_h:.2f} "
+            f"H{x + 4:.2f} "
+            f"Q{x:.2f},{bar_y + bar_h:.2f} {x:.2f},{bar_y + bar_h - 4:.2f} "
+            f"V{bar_y + 4:.2f} "
+            f"Q{x:.2f},{bar_y:.2f} {x + 4:.2f},{bar_y:.2f} Z"
+        )
+        bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
+    elif i == len(items) - 1:
+        x2 = x + segment_w
+        path = (
+            f"M{x:.2f},{bar_y:.2f} "
+            f"H{x2 - 4:.2f} "
+            f"Q{x2:.2f},{bar_y:.2f} {x2:.2f},{bar_y + 4:.2f} "
+            f"V{bar_y + bar_h - 4:.2f} "
+            f"Q{x2:.2f},{bar_y + bar_h:.2f} {x2 - 4:.2f},{bar_y + bar_h:.2f} "
+            f"H{x:.2f} Z"
+        )
+        bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
+    else:
+        bar_segments.append(
+            f'<rect x="{x:.2f}" y="{bar_y:.2f}" width="{segment_w:.2f}" height="{bar_h}" fill="{item["color"]}"/>'
+        )
+
+dots = []
+labels = []
+percents = []
+
+for i, item in enumerate(items):
+    cx = centers[i]
+    dots.append(f'<circle cx="{cx:.2f}" cy="{dot_y:.2f}" r="3" fill="{item["color"]}"/>')
+    labels.append(
+        f'<text x="{cx:.2f}" y="{label_y:.2f}" text-anchor="middle" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
     )
-
-
-# ---------------------------------------------------------
-# BARRE SUPÉRIEURE
-# ---------------------------------------------------------
-#
-# On conserve exactement la disposition du preview :
-#
-# CSS        78 px
-# C++        78 px
-# JavaScript 78 px
-# Python     78 px
-# PowerShell 31 px
-# Lua        16 px
-# Shell      16 px
-# TypeScript 15 px
-#
-# Total = 390 px
-#
-# La barre reste donc visuellement identique au mockup,
-# tandis que les pourcentages affichés restent dynamiques.
-
-bar_segments = [
-    (41, 78),
-    (119, 78),
-    (197, 78),
-    (275, 78),
-    (353, 31),
-    (384, 16),
-    (400, 16),
-    (416, 15),
-]
-
-
-bar_svg = []
-
-for item, (x, width) in zip(
-    items,
-    bar_segments,
-):
-    bar_svg.append(
-        f'''
-        <rect
-            x="{x}"
-            y="92"
-            width="{width}"
-            height="8"
-            fill="{item["color"]}"
-        />
-        '''
+    percents.append(
+        f'<text x="{cx:.2f}" y="{percent_y:.2f}" text-anchor="middle" fill="{MUTED}" font-size="10" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
     )
-
-
-# ---------------------------------------------------------
-# GRILLE 4 × 2
-# ---------------------------------------------------------
-
-positions = [
-    # Ligne 1
-    (57, 67, 123, 127, 143),
-    (157, 167, 123, 127, 143),
-    (257, 267, 123, 127, 143),
-    (367, 377, 123, 127, 143),
-
-    # Ligne 2
-    (57, 67, 161, 165, 181),
-    (157, 167, 161, 165, 181),
-    (257, 267, 161, 165, 181),
-    (367, 377, 161, 165, 181),
-]
-
-
-languages_svg = []
-
-
-for item, position in zip(
-    items,
-    positions,
-):
-    (
-        circle_x,
-        text_x,
-        circle_y,
-        name_y,
-        percent_y,
-    ) = position
-
-    languages_svg.append(
-        f'''
-        <circle
-            cx="{circle_x}"
-            cy="{circle_y}"
-            r="3"
-            fill="{item["color"]}"
-        />
-
-        <text
-            x="{text_x}"
-            y="{name_y}"
-            fill="{TEXT}"
-            font-family="Segoe UI, Arial, sans-serif"
-            font-size="10"
-            font-weight="500"
-        >{item["name"]}</text>
-
-        <text
-            x="{text_x}"
-            y="{percent_y}"
-            fill="{MUTED}"
-            font-family="Segoe UI, Arial, sans-serif"
-            font-size="9"
-        >{item["percent"]:.2f}%</text>
-        '''
-    )
-
 
 svg = f'''<svg
+    xmlns="http://www.w3.org/2000/svg"
     width="{WIDTH}"
     height="{HEIGHT}"
     viewBox="0 0 {WIDTH} {HEIGHT}"
-    xmlns="http://www.w3.org/2000/svg"
 >
-
-    <defs>
-        <clipPath id="barClip">
-            <rect
-                x="41"
-                y="92"
-                width="390"
-                height="8"
-                rx="4"
-            />
-        </clipPath>
-    </defs>
-
     <rect
-        x="15"
-        y="25"
-        width="444"
-        height="176"
-        rx="7"
+        x="{card_x}"
+        y="{card_y}"
+        width="{card_w}"
+        height="{card_h}"
+        rx="6"
         fill="{BG}"
         stroke="{BORDER}"
-        stroke-width="1"
     />
 
     <text
-        x="237"
-        y="71"
+        x="{WIDTH / 2:.2f}"
+        y="{title_y:.2f}"
         text-anchor="middle"
         fill="{TITLE}"
-        font-family="Segoe UI, Arial, sans-serif"
-        font-size="16"
+        font-size="19"
         font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
     >Top Languages</text>
 
-    <g clip-path="url(#barClip)">
-        {''.join(bar_svg)}
-    </g>
-
-    {''.join(languages_svg)}
-
+    {''.join(bar_segments)}
+    {''.join(dots)}
+    {''.join(labels)}
+    {''.join(percents)}
 </svg>
 '''
 
+os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
 
-os.makedirs(
-    os.path.dirname(OUTPUT),
-    exist_ok=True,
-)
-
-
-with open(
-    OUTPUT,
-    "w",
-    encoding="utf-8",
-) as file:
+with open(OUTPUT, "w", encoding="utf-8") as file:
     file.write(svg)
 
-
-print("Top Languages")
-print("-" * 40)
-
-for item in items:
-    print(
-        f'{item["name"]:<12} '
-        f'{item["percent"]:>7.2f}%'
-    )
-
-print("-" * 40)
 print(f"Generated {OUTPUT}")
