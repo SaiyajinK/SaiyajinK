@@ -21,26 +21,20 @@ LANG_COLORS = {
     "JavaScript": "#f6e05e",
     "Python": "#4aa8ff",
     "PowerShell": "#0058b8",
-    "C#": "#8b5cf6",
-    "TypeScript": "#3178c6",
-    "HTML": "#e34c26",
-    "XAML": "#6ea8fe",
-    "Batchfile": "#6b7280",
-    "Shell": "#89e051",
+    "Lua": "#2ea44f",
+    "Shell": "#ff812d",
+    "TypeScript": "#16c6c8",
 }
 
-PREFERRED_ORDER = [
+DISPLAY_ORDER = [
     "CSS",
     "C++",
     "JavaScript",
     "Python",
     "PowerShell",
-    "C#",
-    "TypeScript",
-    "HTML",
-    "XAML",
+    "Lua",
     "Shell",
-    "Batchfile",
+    "TypeScript",
 ]
 
 if not TOKEN:
@@ -122,39 +116,28 @@ if not language_sizes:
         "JavaScript": 1,
         "Python": 1,
         "PowerShell": 1,
+        "Lua": 1,
+        "Shell": 1,
+        "TypeScript": 1,
     }
 
-selected = []
-
-for name in PREFERRED_ORDER:
-    if name in language_sizes:
-        selected.append((name, language_sizes[name]))
-
-if len(selected) < 5:
-    remaining = sorted(
-        [(k, v) for k, v in language_sizes.items() if k not in {n for n, _ in selected}],
-        key=lambda x: x[1],
-        reverse=True,
-    )
-    selected.extend(remaining[: 5 - len(selected)])
-
-selected = selected[:5]
-
-total = sum(size for _, size in selected)
-if total == 0:
-    total = 1
-
 items = []
-for name, size in selected:
-    percent = size / total * 100
+for name in DISPLAY_ORDER:
+    size = language_sizes.get(name, 0)
     items.append(
         {
             "name": name,
             "size": size,
-            "percent": percent,
             "color": LANG_COLORS.get(name, "#58a6ff"),
         }
     )
+
+total = sum(item["size"] for item in items)
+if total == 0:
+    total = 1
+
+for item in items:
+    item["percent"] = item["size"] / total * 100
 
 card_x = 12
 card_y = 16
@@ -164,20 +147,16 @@ card_h = HEIGHT - 32
 bar_margin = 28
 bar_h = 8
 
-content_height = 124
+content_height = 140
 content_top = card_y + (card_h - content_height) / 2
 
-title_y = content_top + 18
-bar_y = content_top + 40
-dot_y = content_top + 68
-label_y = content_top + 91
-percent_y = content_top + 116
+title_y = content_top + 16
+bar_y = content_top + 38
 
 bar_x = card_x + bar_margin
 bar_w = card_w - (bar_margin * 2)
 
 segment_w = bar_w / len(items)
-centers = [bar_x + segment_w * i + segment_w / 2 for i in range(len(items))]
 
 bar_segments = []
 for i, item in enumerate(items):
@@ -210,18 +189,53 @@ for i, item in enumerate(items):
             f'<rect x="{x:.2f}" y="{bar_y:.2f}" width="{segment_w:.2f}" height="{bar_h}" fill="{item["color"]}"/>'
         )
 
+# 4 colonnes × 2 lignes
+col_centers = [
+    card_x + card_w * 0.16,
+    card_x + card_w * 0.36,
+    card_x + card_w * 0.58,
+    card_x + card_w * 0.81,
+]
+
+row1_dot_y = content_top + 70
+row1_label_y = content_top + 74
+row1_percent_y = content_top + 90
+
+row2_dot_y = content_top + 108
+row2_label_y = content_top + 112
+row2_percent_y = content_top + 128
+
+dot_radius = 5
+
 dots = []
 labels = []
 percents = []
 
 for i, item in enumerate(items):
-    cx = centers[i]
-    dots.append(f'<circle cx="{cx:.2f}" cy="{dot_y:.2f}" r="3" fill="{item["color"]}"/>')
-    labels.append(
-        f'<text x="{cx:.2f}" y="{label_y:.2f}" text-anchor="middle" fill="{TEXT}" font-size="11" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
+    col = i % 4
+    row = i // 4
+
+    cx = col_centers[col]
+
+    if row == 0:
+        dot_y = row1_dot_y
+        label_y = row1_label_y
+        percent_y = row1_percent_y
+    else:
+        dot_y = row2_dot_y
+        label_y = row2_label_y
+        percent_y = row2_percent_y
+
+    dots.append(
+        f'<circle cx="{cx - 36:.2f}" cy="{dot_y:.2f}" r="{dot_radius}" fill="{item["color"]}"/>'
     )
+
+    labels.append(
+        f'<text x="{cx - 26:.2f}" y="{label_y:.2f}" text-anchor="start" fill="{TEXT}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
+    )
+
     percents.append(
-        f'<text x="{cx:.2f}" y="{percent_y:.2f}" text-anchor="middle" fill="{MUTED}" font-size="10" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
+        f'<text x="{cx - 26:.2f}" y="{percent_y:.2f}" text-anchor="start" fill="{MUTED}" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
     )
 
 svg = f'''<svg
