@@ -5,6 +5,13 @@ OUTPUT = "profile-summary-card-output/custom/kofi-card.svg"
 WIDTH = 230
 HEIGHT = 220
 
+BG = "#0d1117"
+BORDER = "#30363d"
+TITLE = "#008cff"
+TEXT = "#c9d1d9"
+BUTTON_BG = "#0d1117"
+ACCENT = "#008cff"
+
 KOFI_SYMBOL = '''
 <svg
     x="35"
@@ -34,44 +41,20 @@ svg = f'''<svg
     height="{HEIGHT}"
     viewBox="0 0 {WIDTH} {HEIGHT}"
 >
-    <defs>
-        <linearGradient
-            id="cardBackground"
-            x1="0"
-            y1="0"
-            x2="1"
-            y2="1"
-        >
-            <stop offset="0%" stop-color="#0d1117"/>
-            <stop offset="100%" stop-color="#101722"/>
-        </linearGradient>
-
-        <linearGradient
-            id="buttonBackground"
-            x1="0"
-            y1="0"
-            x2="1"
-            y2="0"
-        >
-            <stop offset="0%" stop-color="#111b28"/>
-            <stop offset="100%" stop-color="#0d1520"/>
-        </linearGradient>
-    </defs>
-
     <rect
         x="0.5"
         y="0.5"
         width="{WIDTH - 1}"
         height="{HEIGHT - 1}"
         rx="6"
-        fill="url(#cardBackground)"
-        stroke="#30363d"
+        fill="{BG}"
+        stroke="{BORDER}"
     />
 
     <text
         x="20"
         y="31"
-        fill="#008cff"
+        fill="{TITLE}"
         font-size="19"
         font-weight="600"
         font-family="Segoe UI, Arial, sans-serif"
@@ -80,7 +63,7 @@ svg = f'''<svg
     <text
         x="20"
         y="68"
-        fill="#c9d1d9"
+        fill="{TEXT}"
         font-size="12"
         font-family="Segoe UI, Arial, sans-serif"
     >
@@ -94,8 +77,8 @@ svg = f'''<svg
         width="190"
         height="52"
         rx="7"
-        fill="url(#buttonBackground)"
-        stroke="#008cff"
+        fill="{BUTTON_BG}"
+        stroke="{ACCENT}"
         stroke-width="1.5"
     />
 
@@ -115,7 +98,7 @@ svg = f'''<svg
     <path
         d="M190 148 L198 148 L198 156"
         fill="none"
-        stroke="#008cff"
+        stroke="{ACCENT}"
         stroke-width="1.8"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -124,16 +107,23 @@ svg = f'''<svg
     <path
         d="M198 148 L188 158"
         fill="none"
-        stroke="#008cff"
+        stroke="{ACCENT}"
         stroke-width="1.8"
         stroke-linecap="round"
     />
 </svg>
 '''
 
-os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+os.makedirs(
+    os.path.dirname(OUTPUT),
+    exist_ok=True,
+)
 
-with open(OUTPUT, "w", encoding="utf-8") as file:
+with open(
+    OUTPUT,
+    "w",
+    encoding="utf-8",
+) as file:
     file.write(svg)
 
 print(f"Generated {OUTPUT}")
