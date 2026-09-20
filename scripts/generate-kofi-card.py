@@ -48,7 +48,6 @@ svg = f'''<svg
     viewBox="0 0 {WIDTH} {HEIGHT}"
 >
 
-    <!-- Card -->
     <rect
         x="0.5"
         y="0.5"
@@ -59,7 +58,6 @@ svg = f'''<svg
         stroke="{BORDER}"
     />
 
-    <!-- Title -->
     <text
         x="20"
         y="32"
@@ -69,7 +67,6 @@ svg = f'''<svg
         font-family="Segoe UI, Arial, sans-serif"
     >Support</text>
 
-    <!-- Description -->
     <text
         x="20"
         y="66"
@@ -88,7 +85,6 @@ svg = f'''<svg
         >consider buying me a coffee!</tspan>
     </text>
 
-    <!-- Ko-fi button -->
     <rect
         x="20"
         y="112"
@@ -100,12 +96,10 @@ svg = f'''<svg
         stroke-width="2"
     />
 
-    <!-- Ko-fi logo -->
     {KOFI_SYMBOL}
 
-    <!-- Button text -->
     <text
-        x="136"
+        x="143"
         y="139"
         text-anchor="middle"
         dominant-baseline="middle"
@@ -115,14 +109,14 @@ svg = f'''<svg
         font-family="Segoe UI, Arial, sans-serif"
     >Support on Ko-fi</text>
 
-    <!-- Bottom heart -->
+    <!-- Bottom centered heart -->
     <path
         d="
-            M72 186
-            C72 181 78 180 81 184
-            C84 180 90 181 90 186
-            C90 191 81 197 81 197
-            C81 197 72 191 72 186
+            M46 187
+            C46 182 52 181 55 185
+            C58 181 64 182 64 187
+            C64 192 55 198 55 198
+            C55 198 46 192 46 187
             Z
         "
         fill="none"
@@ -132,12 +126,13 @@ svg = f'''<svg
         stroke-linejoin="round"
     />
 
-    <!-- Bottom message -->
+    <!-- Bottom centered message -->
     <text
-        x="100"
-        y="191"
+        x="132"
+        y="192"
+        text-anchor="middle"
         fill="{SOFT_RED}"
-        font-size="11"
+        font-size="10"
         font-family="Segoe UI, Arial, sans-serif"
     >Your support means a lot!</text>
 
