@@ -7,17 +7,22 @@ HEIGHT = 220
 
 BG = "#0d1117"
 BORDER = "#30363d"
+
 TITLE = "#008cff"
 TEXT = "#c9d1d9"
-BUTTON_BG = "#0d1117"
+
 ACCENT = "#008cff"
+
+BUTTON_BG = "#0d1117"
+SOFT_RED = "#ff8787"
+
 
 KOFI_SYMBOL = '''
 <svg
-    x="35"
-    y="139"
-    width="34"
-    height="28"
+    x="36"
+    y="123"
+    width="38"
+    height="31"
     viewBox="0 0 241 194"
     preserveAspectRatio="xMidYMid meet"
 >
@@ -35,12 +40,15 @@ KOFI_SYMBOL = '''
 </svg>
 '''
 
+
 svg = f'''<svg
     xmlns="http://www.w3.org/2000/svg"
     width="{WIDTH}"
     height="{HEIGHT}"
     viewBox="0 0 {WIDTH} {HEIGHT}"
 >
+
+    <!-- Card -->
     <rect
         x="0.5"
         y="0.5"
@@ -51,42 +59,54 @@ svg = f'''<svg
         stroke="{BORDER}"
     />
 
+    <!-- Title -->
     <text
         x="20"
-        y="31"
+        y="32"
         fill="{TITLE}"
         font-size="19"
         font-weight="600"
         font-family="Segoe UI, Arial, sans-serif"
     >Support</text>
 
+    <!-- Description -->
     <text
         x="20"
-        y="68"
+        y="66"
         fill="{TEXT}"
         font-size="12"
         font-family="Segoe UI, Arial, sans-serif"
     >
-        <tspan x="20" dy="0">If you find my work helpful,</tspan>
-        <tspan x="20" dy="20">consider buying me a coffee!</tspan>
+        <tspan
+            x="20"
+            dy="0"
+        >If you find my work helpful,</tspan>
+
+        <tspan
+            x="20"
+            dy="19"
+        >consider buying me a coffee!</tspan>
     </text>
 
+    <!-- Ko-fi button -->
     <rect
         x="20"
-        y="126"
+        y="112"
         width="190"
-        height="52"
-        rx="7"
+        height="54"
+        rx="8"
         fill="{BUTTON_BG}"
         stroke="{ACCENT}"
-        stroke-width="1.5"
+        stroke-width="2"
     />
 
+    <!-- Ko-fi logo -->
     {KOFI_SYMBOL}
 
+    <!-- Button text -->
     <text
-        x="133"
-        y="152"
+        x="136"
+        y="139"
         text-anchor="middle"
         dominant-baseline="middle"
         fill="#ffffff"
@@ -95,24 +115,60 @@ svg = f'''<svg
         font-family="Segoe UI, Arial, sans-serif"
     >Support on Ko-fi</text>
 
+    <!-- External arrow -->
     <path
-        d="M190 148 L198 148 L198 156"
+        d="
+            M188 132
+            H198
+            V142
+        "
         fill="none"
         stroke="{ACCENT}"
-        stroke-width="1.8"
+        stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
     />
 
     <path
-        d="M198 148 L188 158"
+        d="
+            M198 132
+            L186 144
+        "
         fill="none"
         stroke="{ACCENT}"
-        stroke-width="1.8"
+        stroke-width="2.5"
         stroke-linecap="round"
     />
+
+    <!-- Bottom heart -->
+    <path
+        d="
+            M72 186
+            C72 181 78 180 81 184
+            C84 180 90 181 90 186
+            C90 191 81 197 81 197
+            C81 197 72 191 72 186
+            Z
+        "
+        fill="none"
+        stroke="{SOFT_RED}"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+
+    <!-- Bottom message -->
+    <text
+        x="100"
+        y="191"
+        fill="{SOFT_RED}"
+        font-size="11"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Your support means a lot!</text>
+
 </svg>
 '''
+
 
 os.makedirs(
     os.path.dirname(OUTPUT),
