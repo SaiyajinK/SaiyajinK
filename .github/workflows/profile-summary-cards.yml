@@ -26,11 +26,7 @@ jobs:
         with:
           USERNAME: SaiyajinK
           BRANCH_NAME: root
-
-      - name: Sync repository
-        run: |
-          git fetch origin root
-          git reset --hard origin/root
+          AUTO_PUSH: false
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -78,14 +74,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add profile-summary-card-output/custom/stats.svg
-          git add profile-summary-card-output/custom/languages-5-equal-v2.svg
-          git add profile-summary-card-output/custom/activity.svg
-          git add profile-summary-card-output/custom/activity-3y.svg
-          git add profile-summary-card-output/custom/response-time.svg
-          git add profile-summary-card-output/custom/stars-by-country.svg
-          git add profile-summary-card-output/custom/stars-country-cache.json
-          git add profile-summary-card-output/custom/kofi-card.svg
+          git add profile-summary-card-output/
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
