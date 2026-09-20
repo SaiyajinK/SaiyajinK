@@ -17,7 +17,7 @@ HEIGHT = 200
 
 BG = "#0d1117"
 BORDER = "#30363d"
-TITLE = "#58a6ff"
+TITLE = "#008cff"
 TEXT = "#c9d1d9"
 GITHUB_LOGO = "#8b949e"
 
@@ -391,7 +391,9 @@ svg = f'''<svg
         x="30"
         y="40"
         fill="{TITLE}"
-        font-size="22"
+        font-size="19"
+        font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
     >Stats</text>
 
     <g transform="translate(0,40)">
