@@ -48,9 +48,13 @@ def graphql(query, variables=None):
             "Authorization": f"Bearer {TOKEN}",
             "Accept": "application/vnd.github+json",
         },
-        json={"query": query, "variables": variables or {}},
+        json={
+            "query": query,
+            "variables": variables or {},
+        },
         timeout=30,
     )
+
     response.raise_for_status()
     data = response.json()
 
@@ -94,20 +98,32 @@ language_sizes = {}
 after = None
 
 while True:
-    data = graphql(query, {"login": USERNAME, "after": after})
+    data = graphql(
+        query,
+        {
+            "login": USERNAME,
+            "after": after,
+        },
+    )
+
     repos = data["user"]["repositories"]["nodes"]
 
     for repo in repos:
         for edge in repo["languages"]["edges"]:
             name = edge["node"]["name"]
             size = edge["size"]
-            language_sizes[name] = language_sizes.get(name, 0) + size
+
+            language_sizes[name] = (
+                language_sizes.get(name, 0) + size
+            )
 
     page_info = data["user"]["repositories"]["pageInfo"]
+
     if not page_info["hasNextPage"]:
         break
 
     after = page_info["endCursor"]
+
 
 if not language_sizes:
     language_sizes = {
@@ -121,9 +137,12 @@ if not language_sizes:
         "TypeScript": 1,
     }
 
+
 items = []
+
 for name in DISPLAY_ORDER:
     size = language_sizes.get(name, 0)
+
     items.append(
         {
             "name": name,
@@ -132,12 +151,21 @@ for name in DISPLAY_ORDER:
         }
     )
 
-total = sum(item["size"] for item in items)
+
+total = sum(
+    item["size"]
+    for item in items
+)
+
 if total == 0:
     total = 1
 
+
 for item in items:
-    item["percent"] = item["size"] / total * 100
+    item["percent"] = (
+        item["size"] / total * 100
+    )
+
 
 card_x = 12
 card_y = 16
@@ -148,7 +176,10 @@ bar_margin = 28
 bar_h = 8
 
 content_height = 140
-content_top = card_y + (card_h - content_height) / 2
+content_top = (
+    card_y
+    + (card_h - content_height) / 2
+)
 
 title_y = content_top + 16
 bar_y = content_top + 38
@@ -158,7 +189,13 @@ bar_w = card_w - (bar_margin * 2)
 
 segment_w = bar_w / len(items)
 
+
+# ---------------------------------------------------------
+# BARRE DE COULEURS
+# ---------------------------------------------------------
+
 bar_segments = []
+
 for i, item in enumerate(items):
     x = bar_x + segment_w * i
 
@@ -168,28 +205,51 @@ for i, item in enumerate(items):
             f"H{x + segment_w:.2f} "
             f"V{bar_y + bar_h:.2f} "
             f"H{x + 4:.2f} "
-            f"Q{x:.2f},{bar_y + bar_h:.2f} {x:.2f},{bar_y + bar_h - 4:.2f} "
+            f"Q{x:.2f},{bar_y + bar_h:.2f} "
+            f"{x:.2f},{bar_y + bar_h - 4:.2f} "
             f"V{bar_y + 4:.2f} "
-            f"Q{x:.2f},{bar_y:.2f} {x + 4:.2f},{bar_y:.2f} Z"
+            f"Q{x:.2f},{bar_y:.2f} "
+            f"{x + 4:.2f},{bar_y:.2f} Z"
         )
-        bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
+
+        bar_segments.append(
+            f'<path d="{path}" fill="{item["color"]}"/>'
+        )
+
     elif i == len(items) - 1:
         x2 = x + segment_w
+
         path = (
             f"M{x:.2f},{bar_y:.2f} "
             f"H{x2 - 4:.2f} "
-            f"Q{x2:.2f},{bar_y:.2f} {x2:.2f},{bar_y + 4:.2f} "
+            f"Q{x2:.2f},{bar_y:.2f} "
+            f"{x2:.2f},{bar_y + 4:.2f} "
             f"V{bar_y + bar_h - 4:.2f} "
-            f"Q{x2:.2f},{bar_y + bar_h:.2f} {x2 - 4:.2f},{bar_y + bar_h:.2f} "
+            f"Q{x2:.2f},{bar_y + bar_h:.2f} "
+            f"{x2 - 4:.2f},{bar_y + bar_h:.2f} "
             f"H{x:.2f} Z"
         )
-        bar_segments.append(f'<path d="{path}" fill="{item["color"]}"/>')
-    else:
+
         bar_segments.append(
-            f'<rect x="{x:.2f}" y="{bar_y:.2f}" width="{segment_w:.2f}" height="{bar_h}" fill="{item["color"]}"/>'
+            f'<path d="{path}" fill="{item["color"]}"/>'
         )
 
-# 4 colonnes × 2 lignes
+    else:
+        bar_segments.append(
+            f'<rect '
+            f'x="{x:.2f}" '
+            f'y="{bar_y:.2f}" '
+            f'width="{segment_w:.2f}" '
+            f'height="{bar_h}" '
+            f'fill="{item["color"]}"'
+            f'/>'
+        )
+
+
+# ---------------------------------------------------------
+# GRILLE 4 × 2
+# ---------------------------------------------------------
+
 column_w = bar_w / 4
 
 col_centers = [
@@ -213,6 +273,14 @@ dots = []
 labels = []
 percents = []
 
+
+def estimate_text_width(
+    text,
+    font_size=10.5,
+):
+    return len(text) * (font_size * 0.56)
+
+
 for i, item in enumerate(items):
     col = i % 4
     row = i // 4
@@ -228,17 +296,64 @@ for i, item in enumerate(items):
         label_y = row2_label_y
         percent_y = row2_percent_y
 
+    font_size = 10.5
+    gap = 8
+
+    label_width = estimate_text_width(
+        item["name"],
+        font_size,
+    )
+
+    group_width = (
+        dot_radius * 2
+        + gap
+        + label_width
+    )
+
+    group_left = cx - (group_width / 2)
+
+    circle_x = (
+        group_left
+        + dot_radius
+    )
+
+    text_x = (
+        group_left
+        + dot_radius * 2
+        + gap
+    )
+
     dots.append(
-        f'<circle cx="{cx - 34:.2f}" cy="{dot_y:.2f}" r="{dot_radius}" fill="{item["color"]}"/>'
+        f'<circle '
+        f'cx="{circle_x:.2f}" '
+        f'cy="{dot_y:.2f}" '
+        f'r="{dot_radius}" '
+        f'fill="{item["color"]}"'
+        f'/>'
     )
 
     labels.append(
-        f'<text x="{cx:.2f}" y="{label_y:.2f}" text-anchor="middle" fill="{TEXT}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
+        f'<text '
+        f'x="{text_x:.2f}" '
+        f'y="{label_y:.2f}" '
+        f'text-anchor="start" '
+        f'fill="{TEXT}" '
+        f'font-size="{font_size}" '
+        f'font-family="Segoe UI, Arial, sans-serif"'
+        f'>{item["name"]}</text>'
     )
 
     percents.append(
-        f'<text x="{cx:.2f}" y="{percent_y:.2f}" text-anchor="middle" fill="{MUTED}" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
+        f'<text '
+        f'x="{cx:.2f}" '
+        f'y="{percent_y:.2f}" '
+        f'text-anchor="middle" '
+        f'fill="{MUTED}" '
+        f'font-size="9.5" '
+        f'font-family="Segoe UI, Arial, sans-serif"'
+        f'>{item["percent"]:.2f}%</text>'
     )
+
 
 svg = f'''<svg
     xmlns="http://www.w3.org/2000/svg"
@@ -273,9 +388,19 @@ svg = f'''<svg
 </svg>
 '''
 
-os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
 
-with open(OUTPUT, "w", encoding="utf-8") as file:
+os.makedirs(
+    os.path.dirname(OUTPUT),
+    exist_ok=True,
+)
+
+
+with open(
+    OUTPUT,
+    "w",
+    encoding="utf-8",
+) as file:
     file.write(svg)
+
 
 print(f"Generated {OUTPUT}")
