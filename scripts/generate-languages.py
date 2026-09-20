@@ -190,11 +190,13 @@ for i, item in enumerate(items):
         )
 
 # 4 colonnes × 2 lignes
+column_w = bar_w / 4
+
 col_centers = [
-    card_x + card_w * 0.16,
-    card_x + card_w * 0.36,
-    card_x + card_w * 0.58,
-    card_x + card_w * 0.81,
+    bar_x + column_w * 0.5,
+    bar_x + column_w * 1.5,
+    bar_x + column_w * 2.5,
+    bar_x + column_w * 3.5,
 ]
 
 row1_dot_y = content_top + 70
