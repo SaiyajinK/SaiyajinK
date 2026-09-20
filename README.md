@@ -1,7 +1,7 @@
 <table>
   <tr>
     <td align="center" valign="middle">
-      <img src="https://raw.githubusercontent.com/SaiyajinK/SaiyajinK/root/profile-summary-card-output/github_dark/3-stats.svg" width="350">
+      <img src="./profile-summary-card-output/custom/stats.svg" width="350">
     </td>
     <td align="center" valign="middle">
       <img src="https://raw.githubusercontent.com/SaiyajinK/SaiyajinK/root/profile-summary-card-output/custom/languages-5-equal-v2.svg" width="500">
