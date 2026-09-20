@@ -1,0 +1,31 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="500"
+    height="220"
+    viewBox="0 0 500 220"
+>
+    <rect
+        x="12"
+        y="16"
+        width="476"
+        height="188"
+        rx="6"
+        fill="#0d1117"
+        stroke="#30363d"
+    />
+
+    <text
+        x="250.00"
+        y="56.00"
+        text-anchor="middle"
+        fill="#008cff"
+        font-size="19"
+        font-weight="600"
+        font-family="Segoe UI, Arial, sans-serif"
+    >Top Languages</text>
+
+    <path d="M44.00,78.00 H92.50 V86.00 H44.00 Q40.00,86.00 40.00,82.00 V82.00 Q40.00,78.00 44.00,78.00 Z" fill="#a855f7"/><rect x="92.50" y="78.00" width="52.50" height="8" fill="#ff4d94"/><rect x="145.00" y="78.00" width="52.50" height="8" fill="#f6e05e"/><rect x="197.50" y="78.00" width="52.50" height="8" fill="#4aa8ff"/><rect x="250.00" y="78.00" width="52.50" height="8" fill="#0058b8"/><rect x="302.50" y="78.00" width="52.50" height="8" fill="#2ea44f"/><rect x="355.00" y="78.00" width="52.50" height="8" fill="#ff812d"/><path d="M407.50,78.00 H456.00 Q460.00,78.00 460.00,82.00 V82.00 Q460.00,86.00 456.00,86.00 H407.50 Z" fill="#16c6c8"/>
+    <circle cx="79.68" cy="110.00" r="5" fill="#a855f7"/><circle cx="184.68" cy="110.00" r="5" fill="#ff4d94"/><circle cx="269.10" cy="110.00" r="5" fill="#f6e05e"/><circle cx="385.86" cy="110.00" r="5" fill="#4aa8ff"/><circle cx="59.10" cy="148.00" r="5" fill="#0058b8"/><circle cx="184.68" cy="148.00" r="5" fill="#2ea44f"/><circle cx="283.80" cy="148.00" r="5" fill="#ff812d"/><circle cx="374.10" cy="148.00" r="5" fill="#16c6c8"/>
+    <text x="92.68" y="114.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">CSS</text><text x="197.68" y="114.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">C++</text><text x="282.10" y="114.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">JavaScript</text><text x="398.86" y="114.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Python</text><text x="72.10" y="152.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">PowerShell</text><text x="197.68" y="152.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Lua</text><text x="296.80" y="152.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">Shell</text><text x="387.10" y="152.00" text-anchor="start" fill="#c9d1d9" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">TypeScript</text>
+    <text x="92.50" y="130.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">57.78%</text><text x="197.50" y="130.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">2.55%</text><text x="302.50" y="130.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">1.97%</text><text x="407.50" y="130.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">1.58%</text><text x="92.50" y="168.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">33.23%</text><text x="197.50" y="168.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">0.27%</text><text x="302.50" y="168.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">0.03%</text><text x="407.50" y="168.00" text-anchor="middle" fill="#9da7b3" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">2.59%</text>
+</svg>
