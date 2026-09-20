@@ -3,6 +3,7 @@ name: GitHub Profile Summary Cards
 on:
   schedule:
     - cron: "0 0 * * *"
+
   workflow_dispatch:
 
 jobs:
@@ -55,6 +56,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
         run: python scripts/generate-activity-3y.py
+
+      - name: Verify response time script
+        run: |
+          echo "=== CURRENT DIRECTORY ==="
+          pwd
+
+          echo "=== CURRENT COMMIT ==="
+          git rev-parse HEAD
+
+          echo "=== GIT STATUS ==="
+          git status --short
+
+          echo "=== TRACKED SCRIPTS ==="
+          git ls-files scripts
+
+          echo "=== REAL FILES IN SCRIPTS ==="
+          ls -la scripts
+          ls -lb scripts
+
+          echo "=== RESPONSE TIME SCRIPT ==="
+          if [ -f "scripts/generate-response-time.py" ]; then
+            echo "FOUND: scripts/generate-response-time.py"
+          else
+            echo "NOT FOUND: scripts/generate-response-time.py"
+            exit 1
+          fi
 
       - name: Generate response time card
         env:
