@@ -227,15 +227,15 @@ for i, item in enumerate(items):
         percent_y = row2_percent_y
 
     dots.append(
-        f'<circle cx="{cx - 36:.2f}" cy="{dot_y:.2f}" r="{dot_radius}" fill="{item["color"]}"/>'
+        f'<circle cx="{cx - 34:.2f}" cy="{dot_y:.2f}" r="{dot_radius}" fill="{item["color"]}"/>'
     )
 
     labels.append(
-        f'<text x="{cx - 26:.2f}" y="{label_y:.2f}" text-anchor="start" fill="{TEXT}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
+        f'<text x="{cx:.2f}" y="{label_y:.2f}" text-anchor="middle" fill="{TEXT}" font-size="10.5" font-family="Segoe UI, Arial, sans-serif">{item["name"]}</text>'
     )
 
     percents.append(
-        f'<text x="{cx - 26:.2f}" y="{percent_y:.2f}" text-anchor="start" fill="{MUTED}" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
+        f'<text x="{cx:.2f}" y="{percent_y:.2f}" text-anchor="middle" fill="{MUTED}" font-size="9.5" font-family="Segoe UI, Arial, sans-serif">{item["percent"]:.2f}%</text>'
     )
 
 svg = f'''<svg
